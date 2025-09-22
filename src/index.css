@@ -2,129 +2,129 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Template Management System Design Tokens */
+/* Clean Template Management System - White & Gray Design */
 @layer base {
   :root {
-    /* Base colors - Professional template management system */
-    --background: 248 250 252%;
-    --foreground: 15 23 42%;
+    /* Base colors - Clean white backgrounds */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
 
-    /* Card system for template items */
+    /* Card system for template items - Pure white */
     --card: 0 0% 100%;
-    --card-foreground: 15 23 42%;
+    --card-foreground: 0 0% 9%;
 
     /* Interactive elements */
     --popover: 0 0% 100%;
-    --popover-foreground: 15 23 42%;
+    --popover-foreground: 0 0% 9%;
 
-    /* Primary - Professional blue for template system */
-    --primary: 217 91% 60%;
+    /* Primary - Subtle blue for main actions */
+    --primary: 217 91% 59%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 55%;
+    --primary-hover: 217 91% 54%;
 
-    /* Secondary - Subtle gray for secondary actions */
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 15 23 42%;
-    --secondary-hover: 240 5% 91%;
+    /* Secondary - Light gray for secondary actions */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
+    --secondary-hover: 0 0% 91%;
 
-    /* Muted elements */
-    --muted: 240 5% 96%;
-    --muted-foreground: 100 116 139%;
+    /* Muted elements - Neutral grays */
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    /* Accent - Success green for template operations */
-    --accent: 142 76% 36%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Subtle gray accent */
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 9%;
 
-    /* Destructive - Warning red for delete operations */
+    /* Destructive - Clean red for delete operations */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Border and input styling */
-    --border: 226 13% 87%;
+    /* Border and input styling - Light grays */
+    --border: 0 0% 90%;
     --input: 0 0% 100%;
-    --ring: 217 91% 60%;
+    --ring: 217 91% 59%;
 
     /* Template editor specific tokens */
-    --editor-bg: 248 250 252%;
-    --editor-border: 226 13% 87%;
-    --variable-highlight: 59 130% 85%;
-    --variable-text: 25 95% 53%;
+    --editor-bg: 0 0% 100%;
+    --editor-border: 0 0% 90%;
+    --variable-highlight: 0 0% 96%;
+    --variable-text: 217 91% 59%;
+
+    /* Action button colors - Gray tones */
+    --action-edit: 0 0% 64%;
+    --action-edit-hover: 0 0% 45%;
+    --action-delete: 0 84% 60%;
+    --action-delete-hover: 0 84% 55%;
 
     /* Status colors */
     --success: 142 76% 36%;
     --warning: 38 92% 50%;
-    --info: 217 91% 60%;
-
-    /* Shadows and effects */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --info: 217 91% 59%;
 
     --radius: 0.5rem;
 
-    --radius: 0.5rem;
-
+    /* Sidebar colors - Clean grays */
     --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 0 0% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 0 0% 95%;
+    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-border: 0 0% 91%;
+    --sidebar-ring: 217 91% 59%;
   }
 
   .dark {
-    /* Dark mode for template management */
-    --background: 15 23 42%;
-    --foreground: 248 250 252%;
+    /* Dark mode - Clean dark grays */
+    --background: 0 0% 9%;
+    --foreground: 0 0% 98%;
 
-    --card: 30 41 59%;
-    --card-foreground: 248 250 252%;
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 30 41 59%;
-    --popover-foreground: 248 250 252%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 217 91% 60%;
+    --primary: 217 91% 59%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 65%;
+    --primary-hover: 217 91% 64%;
 
-    --secondary: 30 41 59%;
-    --secondary-foreground: 248 250 252%;
-    --secondary-hover: 15 23 42%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 98%;
+    --secondary-hover: 0 0% 18%;
 
-    --muted: 30 41 59%;
-    --muted-foreground: 148 163 184%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 64%;
 
-    --accent: 142 76% 36%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 0 0% 14%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 30 41 59%;
-    --input: 30 41 59%;
-    --ring: 217 91% 60%;
+    --border: 0 0% 14%;
+    --input: 0 0% 9%;
+    --ring: 217 91% 59%;
 
-    --editor-bg: 15 23 42%;
-    --editor-border: 30 41 59%;
-    --variable-highlight: 45 93% 47%;
-    --variable-text: 45 93% 47%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --editor-bg: 0 0% 9%;
+    --editor-border: 0 0% 14%;
+    --variable-highlight: 0 0% 14%;
+    --variable-text: 217 91% 59%;
+
+    --action-edit: 0 0% 64%;
+    --action-edit-hover: 0 0% 45%;
+    --action-delete: 0 84% 60%;
+    --action-delete-hover: 0 84% 55%;
+    
+    /* Sidebar dark colors */
+    --sidebar-background: 0 0% 10%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 217 91% 59%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 217 91% 59%;
   }
 }
 

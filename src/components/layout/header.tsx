@@ -37,7 +37,7 @@ export function Header({ currentView, onNavigate, className }: HeaderProps) {
   }
 
   return (
-    <header className={cn("border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60", className)}>
+    <header className={cn("border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/95", className)}>
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Navigation */}
@@ -47,7 +47,7 @@ export function Header({ currentView, onNavigate, className }: HeaderProps) {
                 <FileText className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-xl font-bold tracking-tight">
+                <h1 className="text-xl font-bold tracking-tight text-foreground">
                   {getTitle()}
                 </h1>
                 <p className="text-sm text-muted-foreground hidden sm:block">

@@ -191,7 +191,7 @@ export function TemplateList({
                         onClick={() => onEdit(template)}
                         disabled={deleteLoading === template.id}
                         aria-label={`Editar plantilla ${template.name}`}
-                        className="hover:bg-accent"
+                        className="text-action-edit hover:text-action-edit-hover hover:bg-muted/50 border-muted-foreground/20"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -202,7 +202,7 @@ export function TemplateList({
                         onClick={() => handleDeleteClick(template)}
                         disabled={deleteLoading === template.id}
                         aria-label={`Eliminar plantilla ${template.name}`}
-                        className="hover:bg-destructive hover:text-destructive-foreground"
+                        className="text-action-delete hover:text-action-delete-hover hover:bg-destructive/10 border-muted-foreground/20"
                       >
                         {deleteLoading === template.id ? (
                           <svg

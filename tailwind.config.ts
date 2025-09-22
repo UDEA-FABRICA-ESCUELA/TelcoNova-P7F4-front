@@ -57,6 +57,12 @@ export default {
           highlight: "hsl(var(--variable-highlight))",
           text: "hsl(var(--variable-text))",
         },
+        action: {
+          edit: "hsl(var(--action-edit))",
+          "edit-hover": "hsl(var(--action-edit-hover))",
+          delete: "hsl(var(--action-delete))",
+          "delete-hover": "hsl(var(--action-delete-hover))",
+        },
         success: "hsl(var(--success))",
         warning: "hsl(var(--warning))",
         info: "hsl(var(--info))",
