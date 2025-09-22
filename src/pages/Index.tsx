@@ -1,7 +1,6 @@
 import * as React from "react"
 import { TemplateList } from "@/components/template-list"
 import { TemplateEditor } from "@/components/template-editor"
-import { Header } from "@/components/layout/header"
 import { useToast } from "@/hooks/use-toast"
 import {
   Template,
@@ -49,13 +48,6 @@ const Index = () => {
   }, [toast])
 
   // Navigation handlers
-  const handleNavigate = (view: ViewState) => {
-    setCurrentView(view)
-    if (view !== "edit") {
-      setEditingTemplate(null)
-    }
-  }
-
   const handleCreateNew = () => {
     setEditingTemplate(null)
     setCurrentView("create")
@@ -64,6 +56,11 @@ const Index = () => {
   const handleEdit = (template: Template) => {
     setEditingTemplate(template)
     setCurrentView("edit")
+  }
+
+  const handleBackToList = () => {
+    setCurrentView("list")
+    setEditingTemplate(null)
   }
 
   // CRUD operations
@@ -94,8 +91,7 @@ const Index = () => {
       }
       
       // Navigate back to list
-      setCurrentView("list")
-      setEditingTemplate(null)
+      handleBackToList()
     } catch (error) {
       const message = error instanceof Error ? error.message : "Error desconocido"
       toast({
@@ -131,47 +127,61 @@ const Index = () => {
     }
   }
 
+  // Render different views based on current state
+  if (currentView === "list") {
+    return (
+      <div className="min-h-screen bg-background">
+        <TemplateList
+          templates={templates}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onCreate={handleCreateNew}
+          loading={loading}
+          deleteLoading={deleteLoading}
+        />
+      </div>
+    )
+  }
+
+  if (currentView === "create") {
+    return (
+      <div className="min-h-screen bg-background">
+        <TemplateEditor
+          onSave={handleSave}
+          loading={saving}
+          mode="create"
+        />
+      </div>
+    )
+  }
+
+  if (currentView === "edit" && editingTemplate) {
+    return (
+      <div className="min-h-screen bg-background">
+        <TemplateEditor
+          initialName={editingTemplate.name}
+          initialContent={editingTemplate.content}
+          onSave={handleSave}
+          loading={saving}
+          mode="edit"
+        />
+      </div>
+    )
+  }
+
+  // Fallback
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <Header 
-        currentView={currentView}
-        onNavigate={handleNavigate}
+      <TemplateList
+        templates={templates}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onCreate={handleCreateNew}
+        loading={loading}
+        deleteLoading={deleteLoading}
       />
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {currentView === "list" && (
-          <TemplateList
-            templates={templates}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onCreate={handleCreateNew}
-            loading={loading}
-            deleteLoading={deleteLoading}
-          />
-        )}
-        
-        {currentView === "create" && (
-          <TemplateEditor
-            onSave={handleSave}
-            loading={saving}
-            mode="create"
-          />
-        )}
-        
-        {currentView === "edit" && editingTemplate && (
-          <TemplateEditor
-            initialName={editingTemplate.name}
-            initialContent={editingTemplate.content}
-            onSave={handleSave}
-            loading={saving}
-            mode="edit"
-          />
-        )}
-      </main>
     </div>
-  );
+  )
 };
 
 export default Index;

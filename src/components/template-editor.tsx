@@ -6,10 +6,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
 import { PREDEFINED_VARIABLES, validateTemplateContent } from "@/lib/api"
 import { cn } from "@/lib/utils"
-import { Save, Copy, Check, AlertCircle } from "lucide-react"
+import { Save, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface TemplateEditorProps {
@@ -29,7 +28,6 @@ export function TemplateEditor({
 }: TemplateEditorProps) {
   const [name, setName] = React.useState(initialName)
   const [content, setContent] = React.useState(initialContent)
-  const [copiedVariable, setCopiedVariable] = React.useState<string | null>(null)
   const [validation, setValidation] = React.useState<{
     isValid: boolean
     errors: string[]
@@ -47,42 +45,29 @@ export function TemplateEditor({
     }
   }, [content])
 
-  // Copy variable to clipboard and insert at cursor position
-  const handleVariableCopy = async (variableName: string) => {
+  // Insert variable at cursor position
+  const handleVariableInsert = (variableName: string) => {
     const variable = `{${variableName}}`
     
-    try {
-      await navigator.clipboard.writeText(variable)
-      setCopiedVariable(variableName)
-      setTimeout(() => setCopiedVariable(null), 2000)
+    if (textareaRef.current) {
+      const textarea = textareaRef.current
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const newContent = content.substring(0, start) + variable + content.substring(end)
       
-      // Insert at cursor position in textarea
-      if (textareaRef.current) {
-        const textarea = textareaRef.current
-        const start = textarea.selectionStart
-        const end = textarea.selectionEnd
-        const newContent = content.substring(0, start) + variable + content.substring(end)
-        
-        setContent(newContent)
-        
-        // Restore cursor position after variable
-        setTimeout(() => {
-          textarea.focus()
-          textarea.setSelectionRange(start + variable.length, start + variable.length)
-        }, 0)
-      }
-
-      toast({
-        title: "Variable insertada",
-        description: `${variable} ha sido insertado en el editor`,
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo copiar la variable",
-        variant: "destructive",
-      })
+      setContent(newContent)
+      
+      // Restore cursor position after variable
+      setTimeout(() => {
+        textarea.focus()
+        textarea.setSelectionRange(start + variable.length, start + variable.length)
+      }, 0)
     }
+
+    toast({
+      title: "Variable insertada",
+      description: `${variable} ha sido insertado en el editor`,
+    })
   }
 
   const handleSave = async () => {
@@ -123,67 +108,59 @@ export function TemplateEditor({
   const isFormValid = name.trim() && content.trim() && validation.isValid
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-full">
-      {/* Editor Section */}
-      <div className="flex-1 space-y-6">
-        <Card className="h-full">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="rounded-md bg-primary/10 p-2">
-                <Save className="h-4 w-4 text-primary" />
-              </div>
+    <div className="max-w-7xl mx-auto p-6">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-bold text-foreground mb-2">
+          Sistema de Gestión de Plantillas de Mensajes
+        </h1>
+        <p className="text-muted-foreground">
+          Crea y gestiona plantillas de mensajes con variables dinámicas para una comunicación consistente
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Editor Section - Left Side */}
+        <Card className="h-fit">
+          <CardHeader className="bg-muted/30 border-b">
+            <CardTitle className="text-lg font-semibold">
               {mode === "create" ? "Crear Nueva Plantilla" : "Editar Plantilla"}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="p-6 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="template-name">
-                Nombre de la plantilla <span className="text-destructive">*</span>
+              <Label htmlFor="template-name" className="text-sm font-medium">
+                Nombre de la Plantilla
               </Label>
               <Input
                 id="template-name"
-                placeholder="Ej: Confirmación de pedido"
+                placeholder="Ingresa el nombre de la plantilla"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={loading}
-                className="text-base"
-                aria-describedby="template-name-help"
-                maxLength={100}
+                className="w-full"
               />
-              <p id="template-name-help" className="text-sm text-muted-foreground">
-                Nombre descriptivo para identificar la plantilla
-              </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="template-content">
-                Contenido de la plantilla <span className="text-destructive">*</span>
+              <Label htmlFor="template-content" className="text-sm font-medium">
+                Contenido del Mensaje
               </Label>
               <Textarea
                 id="template-content"
                 ref={textareaRef}
-                placeholder="Escribe tu mensaje aquí. Usa variables como {nombre_cliente} para personalizar el contenido..."
+                placeholder="Escribe aquí el contenido de tu plantilla. Usa las variables disponibles del panel derecho."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 disabled={loading}
                 className={cn(
-                  "min-h-[200px] text-base resize-none",
+                  "min-h-[200px] resize-none text-sm",
                   !validation.isValid && "border-destructive focus-visible:ring-destructive"
                 )}
-                aria-describedby="template-content-help template-content-errors"
               />
-              <p id="template-content-help" className="text-sm text-muted-foreground">
-                Utiliza variables dinámicas del panel lateral para personalizar el mensaje
-              </p>
               
               {/* Validation Errors */}
               {!validation.isValid && (
-                <div 
-                  id="template-content-errors" 
-                  className="flex items-start gap-2 p-3 rounded-md bg-destructive/10 border border-destructive/20"
-                  role="alert"
-                  aria-live="polite"
-                >
+                <div className="flex items-start gap-2 p-3 rounded-md bg-destructive/10 border border-destructive/20">
                   <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
                   <div className="space-y-1">
                     {validation.errors.map((error, index) => (
@@ -196,85 +173,53 @@ export function TemplateEditor({
               )}
             </div>
 
-            <div className="flex justify-end pt-4">
+            <div className="pt-4">
               <Button
                 onClick={handleSave}
                 disabled={loading || !isFormValid}
-                className="min-w-[120px]"
-                size="lg"
+                className="w-full bg-primary hover:bg-primary-hover text-primary-foreground"
               >
                 {loading && (
-                  <svg
-                    className="mr-2 h-4 w-4 animate-spin"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      className="opacity-25"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      className="opacity-75"
-                    />
+                  <svg className="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+                    <path fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75" />
                   </svg>
                 )}
-                <Save className="mr-2 h-4 w-4" />
-                {mode === "create" ? "Crear Plantilla" : "Guardar Cambios"}
+                {mode === "create" ? "Crear Plantilla" : "Actualizar Plantilla"}
               </Button>
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Variables Panel */}
-      <div className="w-full lg:w-80">
-        <Card className="h-full">
-          <CardHeader>
-            <CardTitle className="text-lg">Variables Disponibles</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Haz clic en una variable para insertarla en el editor
+        {/* Variables Panel - Right Side */}
+        <Card className="h-fit">
+          <CardHeader className="bg-muted/30 border-b">
+            <CardTitle className="text-lg font-semibold">Variables Disponibles</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Haz clic en las variables para insertarlas en tu plantilla
             </p>
           </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px] lg:h-[500px]">
-              <div className="space-y-3">
-                {PREDEFINED_VARIABLES.map((variable, index) => (
-                  <div key={variable.name}>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start h-auto p-3 text-left hover:bg-accent/50 transition-colors"
-                      onClick={() => handleVariableCopy(variable.name)}
-                      disabled={loading}
-                      aria-label={`Insertar variable ${variable.name}: ${variable.description}`}
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="font-mono text-xs">
-                              {`{${variable.name}}`}
-                            </Badge>
-                            {copiedVariable === variable.name && (
-                              <Check className="h-3 w-3 text-success" />
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {variable.description}
-                          </p>
-                        </div>
-                        <Copy className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <CardContent className="p-6">
+            <ScrollArea className="h-[400px]">
+              <div className="space-y-2">
+                {PREDEFINED_VARIABLES.map((variable) => (
+                  <Button
+                    key={variable.name}
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start p-3 h-auto text-left hover:bg-accent/50 transition-colors"
+                    onClick={() => handleVariableInsert(variable.name)}
+                    disabled={loading}
+                  >
+                    <div className="flex flex-col items-start gap-1 w-full">
+                      <div className="font-mono text-xs bg-muted px-2 py-1 rounded">
+                        {`{${variable.name}}`}
                       </div>
-                    </Button>
-                    {index < PREDEFINED_VARIABLES.length - 1 && (
-                      <Separator className="mt-3" />
-                    )}
-                  </div>
+                      <p className="text-xs text-muted-foreground">
+                        {variable.description}
+                      </p>
+                    </div>
+                  </Button>
                 ))}
               </div>
             </ScrollArea>
