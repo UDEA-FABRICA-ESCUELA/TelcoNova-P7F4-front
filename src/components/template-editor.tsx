@@ -15,6 +15,7 @@ interface TemplateEditorProps {
   initialName?: string
   initialContent?: string
   onSave: (name: string, content: string) => Promise<void>
+  onCancel: () => void
   loading?: boolean
   mode: "create" | "edit"
 }
@@ -23,6 +24,7 @@ export function TemplateEditor({
   initialName = "",
   initialContent = "",
   onSave,
+  onCancel,
   loading = false,
   mode,
 }: TemplateEditorProps) {
@@ -173,11 +175,19 @@ export function TemplateEditor({
               )}
             </div>
 
-            <div className="pt-4">
+            <div className="pt-4 flex gap-3">
+              <Button
+                onClick={onCancel}
+                variant="outline"
+                disabled={loading}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
               <Button
                 onClick={handleSave}
                 disabled={loading || !isFormValid}
-                className="w-full bg-primary hover:bg-primary-hover text-primary-foreground"
+                className="flex-1 bg-primary hover:bg-primary-hover text-primary-foreground"
               >
                 {loading && (
                   <svg className="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">

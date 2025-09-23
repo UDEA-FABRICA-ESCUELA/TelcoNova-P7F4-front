@@ -148,6 +148,7 @@ const Index = () => {
       <div className="min-h-screen bg-background">
         <TemplateEditor
           onSave={handleSave}
+          onCancel={handleBackToList}
           loading={saving}
           mode="create"
         />
@@ -162,6 +163,7 @@ const Index = () => {
           initialName={editingTemplate.name}
           initialContent={editingTemplate.content}
           onSave={handleSave}
+          onCancel={handleBackToList}
           loading={saving}
           mode="edit"
         />
