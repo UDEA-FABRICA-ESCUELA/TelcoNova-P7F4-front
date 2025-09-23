@@ -18,10 +18,20 @@ export interface UpdateTemplatePayload {
   content?: string;
 }
 
-// Variable validation regex as specified in requirements
+// ============================================================================
+// CONFIGURACIÓN DE VARIABLES DEL SISTEMA
+// ============================================================================
+// 
+// IMPORTANTE: Para modificar las variables disponibles, edita la siguiente lista:
+// - Agrega nuevas variables con 'name' y 'description'
+// - El 'name' debe usar solo letras, números y guiones bajos
+// - Estas variables aparecerán en el panel lateral del editor
+//
+// Variable validation regex - permite letras, números y guiones bajos
 export const VARIABLE_REGEX = /\{[a-zA-Z0-9_]+\}/g;
 
-// Predefined variables for the system
+// Variables predefinidas que aparecen en el panel del editor
+// MODIFICAR AQUÍ para agregar nuevas variables del sistema
 export const PREDEFINED_VARIABLES = [
   { name: 'nombre_cliente', description: 'Nombre del cliente' },
   { name: 'id_orden', description: 'ID de la orden' },
@@ -33,6 +43,8 @@ export const PREDEFINED_VARIABLES = [
   { name: 'telefono', description: 'Teléfono de contacto' },
   { name: 'email', description: 'Correo electrónico' },
   { name: 'estado_orden', description: 'Estado de la orden' },
+  // Agregar más variables aquí siguiendo el mismo formato
+  // { name: 'nueva_variable', description: 'Descripción de la nueva variable' },
 ];
 
 const STORAGE_KEY = 'template_management_templates';
@@ -65,7 +77,13 @@ function generateId(): string {
   return `template_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
-// Validate template content for correct variable format
+// ============================================================================
+// VALIDACIÓN DE VARIABLES
+// ============================================================================
+// 
+// Esta función permite CUALQUIER variable que tenga el formato correcto {nombre_variable}
+// No limita a solo las variables predefinidas - puedes usar cualquier variable que necesites
+//
 export function validateTemplateContent(content: string): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
   
@@ -73,8 +91,16 @@ export function validateTemplateContent(content: string): { isValid: boolean; er
   const allBracePatterns = content.match(/\{[^}]*\}/g) || [];
   
   for (const pattern of allBracePatterns) {
+    // Verificar que el patrón coincida con el formato válido
     if (!VARIABLE_REGEX.test(pattern)) {
-      errors.push(`Variable inválida: ${pattern}. Las variables deben tener el formato {nombre_variable} solo con letras, números y guiones bajos.`);
+      // Extraer el contenido dentro de las llaves para mejor mensaje de error
+      const variableContent = pattern.slice(1, -1); // Remover { y }
+      
+      if (variableContent === '') {
+        errors.push(`Variable vacía: ${pattern}. Las variables no pueden estar vacías.`);
+      } else if (!/^[a-zA-Z0-9_]+$/.test(variableContent)) {
+        errors.push(`Variable inválida: ${pattern}. Las variables solo pueden contener letras, números y guiones bajos.`);
+      }
     }
   }
   
