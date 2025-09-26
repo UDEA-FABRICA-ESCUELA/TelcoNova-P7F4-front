@@ -33,12 +33,10 @@ export const VARIABLE_REGEX = /\{[a-zA-Z0-9_]+\}/g;
 // Variables predefinidas que aparecen en el panel del editor
 // MODIFICAR AQUÍ para agregar nuevas variables del sistema
 export const PREDEFINED_VARIABLES = [
-  { name: 'id_servicio', description: 'ID del servicio' },
-  { name: 'nombre_servicio', description: 'Nombre del servicio' },
-  { name: 'id_tecnico', description: 'ID del técnico' },
-  { name: 'nombre_tecnico', description: 'Nombre del técnico' },
-  { name: 'id_cliente', description: 'ID del cliente' },
   { name: 'nombre_cliente', description: 'Nombre del cliente' },
+  { name: 'id_cliente', description: 'ID del cliente' },
+  { name: 'id_orden', description: 'ID de la orden' },
+  { name: 'estado_orden', description: 'Estado de la orden' },
   // Agregar más variables aquí siguiendo el mismo formato
   // { name: 'nueva_variable', description: 'Descripción de la nueva variable' },
 ];
