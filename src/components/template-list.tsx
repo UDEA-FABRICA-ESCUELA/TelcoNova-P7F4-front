@@ -114,8 +114,8 @@ export function TemplateList({
         {/* Lista de Notificaciones */}
         <div>
           <h3 className="text-lg font-semibold text-foreground mb-4">
-            Lista de Notificaciones
-          </h3>
+
+Lista de Notificaciones</h3>
           
           {templates.length === 0 ? <div className="bg-white rounded-lg border p-12 text-center">
               <p className="text-muted-foreground">No hay plantillas creadas</p>
