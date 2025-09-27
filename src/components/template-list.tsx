@@ -9,10 +9,10 @@ import { Edit, Trash2 } from "lucide-react"
 interface TemplateListProps {
   templates: Template[]
   onEdit: (template: Template) => void
-  onDelete: (id: string) => Promise<void>
+  onDelete: (id: number) => Promise<void>
   onCreate: () => void
   loading?: boolean
-  deleteLoading?: string | null
+  deleteLoading?: number | null
 }
 
 export function TemplateList({

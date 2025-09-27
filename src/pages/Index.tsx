@@ -19,7 +19,7 @@ const Index = () => {
   const [editingTemplate, setEditingTemplate] = React.useState<Template | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [saving, setSaving] = React.useState(false)
-  const [deleteLoading, setDeleteLoading] = React.useState<string | null>(null)
+  const [deleteLoading, setDeleteLoading] = React.useState<number | null>(null)
   
   const { toast } = useToast()
 
@@ -104,7 +104,7 @@ const Index = () => {
     }
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     setDeleteLoading(id)
     
     try {

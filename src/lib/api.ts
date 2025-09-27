@@ -1,22 +1,30 @@
 // Mock API implementation using localStorage for template management
 
-export interface Template {
-  id: string;
+// Interfaz que representa una plantilla de mensaje (coincide con MessageTemplateDto del backend)
+export interface MessageTemplateDto {
+  id: number;
   name: string;
   content: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CreateTemplatePayload {
+// Interfaz para crear una nueva plantilla (coincide con CreateTemplateRequest del backend)
+export interface CreateTemplateRequest {
   name: string;
   content: string;
 }
 
-export interface UpdateTemplatePayload {
+// Interfaz para actualizar una plantilla existente (coincide con UpdateTemplateRequest del backend)
+export interface UpdateTemplateRequest {
   name?: string;
   content?: string;
 }
+
+// Alias para compatibilidad con el código existente
+export type Template = MessageTemplateDto;
+export type CreateTemplatePayload = CreateTemplateRequest;
+export type UpdateTemplatePayload = UpdateTemplateRequest;
 
 // ============================================================================
 // CONFIGURACIÓN DE VARIABLES DEL SISTEMA
@@ -47,7 +55,7 @@ const STORAGE_KEY = 'template_management_templates';
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Get templates from localStorage
-function getStoredTemplates(): Template[] {
+function getStoredTemplates(): MessageTemplateDto[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : [];
@@ -58,7 +66,7 @@ function getStoredTemplates(): Template[] {
 }
 
 // Save templates to localStorage
-function saveTemplates(templates: Template[]): void {
+function saveTemplates(templates: MessageTemplateDto[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(templates));
   } catch (error) {
@@ -66,9 +74,9 @@ function saveTemplates(templates: Template[]): void {
   }
 }
 
-// Generate unique ID for new templates
-function generateId(): string {
-  return `template_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+// Generate unique ID for new templates (usando números como el backend)
+function generateId(): number {
+  return Date.now() + Math.floor(Math.random() * 1000);
 }
 
 // ============================================================================
@@ -104,117 +112,219 @@ export function validateTemplateContent(content: string): { isValid: boolean; er
   };
 }
 
-// API Functions
+// API que se conectará con el backend Spring Boot
+// Base URL del backend (ajustar según tu configuración)
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
-export async function listTemplates(): Promise<Template[]> {
-  await delay(300); // Simulate network delay
-  return getStoredTemplates();
+/**
+ * Obtiene todas las plantillas desde el backend
+ * GET /api/templates
+ */
+export async function getAllTemplates(): Promise<MessageTemplateDto[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/templates`);
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error al obtener plantillas:', error);
+    // Fallback a localStorage en desarrollo
+    await delay(300);
+    return getStoredTemplates();
+  }
 }
 
-export async function getTemplate(id: string): Promise<Template | null> {
-  await delay(200);
-  const templates = getStoredTemplates();
-  return templates.find(template => template.id === id) || null;
+/**
+ * Obtiene una plantilla por ID desde el backend
+ * GET /api/templates/{id}
+ */
+export async function getTemplate(id: number): Promise<MessageTemplateDto | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/templates/${id}`);
+    if (response.status === 404) {
+      return null;
+    }
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error al obtener plantilla:', error);
+    // Fallback a localStorage en desarrollo
+    await delay(200);
+    const templates = getStoredTemplates();
+    return templates.find(t => t.id === id) || null;
+  }
 }
 
-export async function createTemplate(payload: CreateTemplatePayload): Promise<Template> {
-  await delay(500);
-  
-  // Validate template content
+/**
+ * Crea una nueva plantilla en el backend
+ * POST /api/templates
+ */
+export async function createTemplate(payload: CreateTemplateRequest): Promise<MessageTemplateDto> {
+  // Validar contenido antes de enviar
   const validation = validateTemplateContent(payload.content);
   if (!validation.isValid) {
-    throw new Error(`Errores de validación: ${validation.errors.join(', ')}`);
+    throw new Error(`Errores en el contenido: ${validation.errors.join(', ')}`);
   }
 
-  const templates = getStoredTemplates();
-  
-  // Check for duplicate names
-  if (templates.some(template => template.name.toLowerCase() === payload.name.toLowerCase())) {
-    throw new Error('Ya existe una plantilla con ese nombre');
-  }
-
-  const newTemplate: Template = {
-    id: generateId(),
-    name: payload.name.trim(),
-    content: payload.content,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  const updatedTemplates = [...templates, newTemplate];
-  saveTemplates(updatedTemplates);
-
-  return newTemplate;
-}
-
-export async function updateTemplate(id: string, payload: UpdateTemplatePayload): Promise<Template> {
-  await delay(400);
-  
-  const templates = getStoredTemplates();
-  const templateIndex = templates.findIndex(template => template.id === id);
-  
-  if (templateIndex === -1) {
-    throw new Error('Plantilla no encontrada');
-  }
-
-  // Validate content if provided
-  if (payload.content !== undefined) {
-    const validation = validateTemplateContent(payload.content);
-    if (!validation.isValid) {
-      throw new Error(`Errores de validación: ${validation.errors.join(', ')}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}/templates`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${errorText}`);
     }
-  }
-
-  // Check for duplicate names if name is being updated
-  if (payload.name && payload.name !== templates[templateIndex].name) {
-    if (templates.some(template => template.id !== id && template.name.toLowerCase() === payload.name!.toLowerCase())) {
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error al crear plantilla:', error);
+    // Fallback a localStorage en desarrollo
+    await delay(500);
+    
+    const templates = getStoredTemplates();
+    
+    // Verificar nombre único
+    if (templates.some(t => t.name.toLowerCase() === payload.name.toLowerCase())) {
       throw new Error('Ya existe una plantilla con ese nombre');
     }
+
+    const newTemplate: MessageTemplateDto = {
+      id: generateId(),
+      name: payload.name,
+      content: payload.content,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedTemplates = [...templates, newTemplate];
+    saveTemplates(updatedTemplates);
+    
+    return newTemplate;
   }
-
-  const updatedTemplate: Template = {
-    ...templates[templateIndex],
-    ...payload,
-    name: payload.name?.trim() || templates[templateIndex].name,
-    updatedAt: new Date().toISOString(),
-  };
-
-  templates[templateIndex] = updatedTemplate;
-  saveTemplates(templates);
-
-  return updatedTemplate;
 }
 
-export async function deleteTemplate(id: string): Promise<void> {
-  await delay(300);
-  
-  const templates = getStoredTemplates();
-  const filteredTemplates = templates.filter(template => template.id !== id);
-  
-  if (filteredTemplates.length === templates.length) {
-    throw new Error('Plantilla no encontrada');
+/**
+ * Actualiza una plantilla existente en el backend
+ * PUT /api/templates/{id}
+ */
+export async function updateTemplate(id: number, payload: UpdateTemplateRequest): Promise<MessageTemplateDto> {
+  // Validar contenido si se proporciona
+  if (payload.content) {
+    const validation = validateTemplateContent(payload.content);
+    if (!validation.isValid) {
+      throw new Error(`Errores en el contenido: ${validation.errors.join(', ')}`);
+    }
   }
 
-  saveTemplates(filteredTemplates);
+  try {
+    const response = await fetch(`${API_BASE_URL}/templates/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error al actualizar plantilla:', error);
+    // Fallback a localStorage en desarrollo
+    await delay(400);
+    
+    const templates = getStoredTemplates();
+    const templateIndex = templates.findIndex(t => t.id === id);
+    
+    if (templateIndex === -1) {
+      throw new Error('Plantilla no encontrada');
+    }
+
+    // Verificar nombre único si se cambia
+    if (payload.name) {
+      const existingTemplate = templates.find(t => 
+        t.name.toLowerCase() === payload.name!.toLowerCase() && t.id !== id
+      );
+      if (existingTemplate) {
+        throw new Error('Ya existe otra plantilla con ese nombre');
+      }
+    }
+
+    const updatedTemplate: MessageTemplateDto = {
+      ...templates[templateIndex],
+      ...payload,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedTemplates = [...templates];
+    updatedTemplates[templateIndex] = updatedTemplate;
+    saveTemplates(updatedTemplates);
+    
+    return updatedTemplate;
+  }
 }
+
+/**
+ * Elimina una plantilla del backend
+ * DELETE /api/templates/{id}
+ */
+export async function deleteTemplate(id: number): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/templates/${id}`, {
+      method: 'DELETE',
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+  } catch (error) {
+    console.error('Error al eliminar plantilla:', error);
+    // Fallback a localStorage en desarrollo
+    await delay(300);
+    
+    const templates = getStoredTemplates();
+    const filteredTemplates = templates.filter(t => t.id !== id);
+    
+    if (filteredTemplates.length === templates.length) {
+      throw new Error('Plantilla no encontrada');
+    }
+    
+    saveTemplates(filteredTemplates);
+  }
+}
+
+// Alias para compatibilidad con el código existente
+export const listTemplates = getAllTemplates;
 
 // Initialize with sample data if localStorage is empty
 export function initializeSampleData(): void {
   const templates = getStoredTemplates();
   
   if (templates.length === 0) {
-    const sampleTemplates: Template[] = [
+    const sampleTemplates: MessageTemplateDto[] = [
       {
-        id: 'sample_1',
+        id: 1,
         name: 'Confirmación de Pedido',
-        content: 'Hola {nombre_cliente}, tu pedido #{id_orden} ha sido confirmado. El producto {producto} será entregado el {fecha_entrega} en {direccion}. Total a pagar: {precio_total}.',
+        content: 'Hola {nombre_cliente}, tu pedido #{id_orden} ha sido confirmado. El estado actual es: {estado_orden}.',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
-        id: 'sample_2',
+        id: 2,
         name: 'Actualización de Estado',
-        content: 'Estimado/a {nombre_cliente}, el estado de tu orden #{id_orden} ha cambiado a: {estado_orden}. Puedes contactarnos al {telefono} para más información.',
+        content: 'Estimado/a {nombre_cliente} (ID: {id_cliente}), el estado de tu orden #{id_orden} ha cambiado a: {estado_orden}.',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
