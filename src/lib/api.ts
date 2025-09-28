@@ -114,7 +114,7 @@ export function validateTemplateContent(content: string): { isValid: boolean; er
 
 // API que se conectará con el backend Spring Boot
 // Base URL del backend (ajustar según tu configuración)
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 /**
  * Obtiene todas las plantillas desde el backend
