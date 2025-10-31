@@ -108,11 +108,32 @@ Response (exitoso): {
 Response (fallido): HTTP 400/401
 ```
 
-### 3. Usuario de Prueba
+### 3. Usuarios de Prueba
 
-**Credenciales por defecto:**
-- Usuario: `usuario1`
-- Contraseña: `contraseña123`
+**Credenciales disponibles:**
+- Usuario: `usuario1` / Contraseña: `contraseña123`
+- Usuario: `admin` / Contraseña: `admin123`
+
+### 4. Modo Mock (Desarrollo sin Backend)
+
+Por defecto, el sistema usa **modo mock** para pruebas sin necesidad del backend:
+
+```env
+# En .env
+VITE_USE_MOCK_AUTH=true  # Modo mock activado
+```
+
+**Para conectar con el backend real:**
+```env
+VITE_USE_MOCK_AUTH=false  # Usa backend TelcoNova
+```
+
+El modo mock simula completamente el comportamiento del backend:
+- ✅ Valida credenciales
+- ✅ Cuenta intentos fallidos
+- ✅ Bloquea cuentas
+- ✅ Registra eventos en logs
+- ✅ Delay de red simulado (500ms)
 
 ## Flujo de Autenticación
 

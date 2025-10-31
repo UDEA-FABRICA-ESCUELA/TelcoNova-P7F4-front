@@ -100,9 +100,17 @@ const Login = () => {
             </Button>
           </form>
 
-          <div className="text-center text-sm text-muted-foreground">
-            <p>Usuario de prueba: usuario1</p>
-            <p>Contraseña: contraseña123</p>
+          <div className="text-center text-sm space-y-2">
+            <div className="p-3 bg-muted/50 rounded-lg">
+              <p className="font-medium text-foreground mb-1">👤 Usuarios de prueba:</p>
+              <div className="space-y-1 text-muted-foreground">
+                <p>• usuario1 / contraseña123</p>
+                <p>• admin / admin123</p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              🔧 Modo desarrollo activo (sin backend)
+            </p>
           </div>
         </div>
       </div>

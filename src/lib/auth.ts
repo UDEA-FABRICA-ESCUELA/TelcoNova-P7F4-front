@@ -1,5 +1,13 @@
 // Servicio de autenticación para conectar con el backend TelcoNova
 const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8080/api/auth';
+// Modo mock para pruebas sin backend (cambiar a 'false' cuando el backend esté disponible)
+const USE_MOCK_AUTH = import.meta.env.VITE_USE_MOCK_AUTH !== 'false';
+
+// Usuarios mock para pruebas
+const MOCK_USERS = [
+  { username: 'usuario1', password: 'contraseña123', token: 'mock_token_usuario1' },
+  { username: 'admin', password: 'admin123', token: 'mock_token_admin' },
+];
 
 export interface LoginRequest {
   username: string;
@@ -122,34 +130,77 @@ class AuthService {
     }
 
     try {
-      const response = await fetch(`${AUTH_API_URL}/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-
-      if (!response.ok) {
-        // Login fallido
-        const attempts = this.recordFailedAttempt(credentials.username);
-        const remaining = MAX_ATTEMPTS - attempts;
+      let data: LoginResponse;
+      
+      // MODO MOCK: Para pruebas sin backend
+      if (USE_MOCK_AUTH) {
+        console.log('🔧 [MODO MOCK] Autenticación en modo desarrollo');
         
-        if (remaining > 0) {
-          throw {
-            message: `Credenciales incorrectas. Le quedan ${remaining} intento${remaining > 1 ? 's' : ''}.`,
-            remainingAttempts: remaining
-          } as AuthError;
-        } else {
-          throw {
-            message: 'Cuenta bloqueada por intentos fallidos.',
-            isBlocked: true,
-            remainingAttempts: 0
-          } as AuthError;
+        // Simular delay de red
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Buscar usuario en mock
+        const mockUser = MOCK_USERS.find(
+          u => u.username === credentials.username && u.password === credentials.password
+        );
+        
+        if (!mockUser) {
+          // Login fallido - mock
+          const attempts = this.recordFailedAttempt(credentials.username);
+          const remaining = MAX_ATTEMPTS - attempts;
+          
+          if (remaining > 0) {
+            throw {
+              message: `Credenciales incorrectas. Le quedan ${remaining} intento${remaining > 1 ? 's' : ''}.`,
+              remainingAttempts: remaining
+            } as AuthError;
+          } else {
+            throw {
+              message: 'Cuenta bloqueada por intentos fallidos.',
+              isBlocked: true,
+              remainingAttempts: 0
+            } as AuthError;
+          }
         }
-      }
+        
+        // Login exitoso - mock
+        data = {
+          token: mockUser.token,
+          username: mockUser.username,
+          message: `¡Bienvenido de vuelta, ${mockUser.username}!`
+        };
+      } 
+      // MODO REAL: Conectar con backend TelcoNova
+      else {
+        const response = await fetch(`${AUTH_API_URL}/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(credentials),
+        });
 
-      const data: LoginResponse = await response.json();
+        if (!response.ok) {
+          // Login fallido
+          const attempts = this.recordFailedAttempt(credentials.username);
+          const remaining = MAX_ATTEMPTS - attempts;
+          
+          if (remaining > 0) {
+            throw {
+              message: `Credenciales incorrectas. Le quedan ${remaining} intento${remaining > 1 ? 's' : ''}.`,
+              remainingAttempts: remaining
+            } as AuthError;
+          } else {
+            throw {
+              message: 'Cuenta bloqueada por intentos fallidos.',
+              isBlocked: true,
+              remainingAttempts: 0
+            } as AuthError;
+          }
+        }
+
+        data = await response.json();
+      }
       
       // Login exitoso - resetear intentos fallidos
       this.resetFailedAttempts(credentials.username);
