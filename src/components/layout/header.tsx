@@ -1,7 +1,8 @@
 import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { FileText, Plus, List, ArrowLeft } from "lucide-react"
+import { FileText, Plus, List, ArrowLeft, LogOut } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
 
 interface HeaderProps {
   currentView: "list" | "create" | "edit"
@@ -10,6 +11,8 @@ interface HeaderProps {
 }
 
 export function Header({ currentView, onNavigate, className }: HeaderProps) {
+  const { logout, username } = useAuth();
+
   const getTitle = () => {
     switch (currentView) {
       case "list":
@@ -59,6 +62,12 @@ export function Header({ currentView, onNavigate, className }: HeaderProps) {
 
           {/* Navigation Actions */}
           <nav className="flex items-center gap-2">
+            {username && (
+              <span className="text-sm text-muted-foreground hidden md:inline">
+                Usuario: <span className="font-medium text-foreground">{username}</span>
+              </span>
+            )}
+            
             {currentView !== "list" && (
               <Button
                 variant="outline"
@@ -92,6 +101,16 @@ export function Header({ currentView, onNavigate, className }: HeaderProps) {
                 </Button>
               </>
             )}
+            
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={logout}
+              className="gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Cerrar sesión</span>
+            </Button>
           </nav>
         </div>
 
