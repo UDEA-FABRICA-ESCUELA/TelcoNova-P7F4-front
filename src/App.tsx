@@ -7,6 +7,7 @@ import { ProtectedRoute } from "@/components/layout/protected-route";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import NotificationQueue from "./pages/NotificationQueue";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Index />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/notification-queue" 
+            element={
+              <ProtectedRoute>
+                <NotificationQueue />
               </ProtectedRoute>
             } 
           />

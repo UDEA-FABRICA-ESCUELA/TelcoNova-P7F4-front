@@ -4,7 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Template } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, ListOrdered } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 interface TemplateListProps {
   templates: Template[];
   onEdit: (template: Template) => void;
@@ -21,6 +22,7 @@ export function TemplateList({
   loading = false,
   deleteLoading = null
 }: TemplateListProps) {
+  const navigate = useNavigate();
   const [deleteDialog, setDeleteDialog] = React.useState<{
     open: boolean;
     template: Template | null;
@@ -102,9 +104,19 @@ export function TemplateList({
                 Administra las plantillas de notificaciones personalizadas para tu sistema
               </p>
             </div>
-            <Button onClick={onCreate} className="bg-foreground text-background hover:bg-foreground/90">
-              Nueva Plantilla
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                onClick={() => navigate("/notification-queue")} 
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <ListOrdered className="h-4 w-4" />
+                Gestionar Cola de Notificaciones
+              </Button>
+              <Button onClick={onCreate} className="bg-foreground text-background hover:bg-foreground/90">
+                Nueva Plantilla
+              </Button>
+            </div>
           </div>
           
           <p className="text-muted-foreground text-sm mb-1">
