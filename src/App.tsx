@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import NotificationQueue from "./pages/NotificationQueue";
+import AlertRules from "./pages/AlertRules";
 
 const queryClient = new QueryClient();
 
@@ -27,13 +28,21 @@ const App = () => (
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="/notification-queue" 
+          <Route
+            path="/notification-queue"
             element={
               <ProtectedRoute>
                 <NotificationQueue />
               </ProtectedRoute>
-            } 
+            }
+          />
+          <Route
+            path="/alert-rules"
+            element={
+              <ProtectedRoute>
+                <AlertRules />
+              </ProtectedRoute>
+            }
           />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Template } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { Edit, Trash2, ListOrdered } from "lucide-react";
+import { Edit, Trash2, ListOrdered, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 interface TemplateListProps {
   templates: Template[];
@@ -112,6 +112,14 @@ export function TemplateList({
               >
                 <ListOrdered className="h-4 w-4" />
                 Gestionar Cola de Notificaciones
+              </Button>
+              <Button 
+                onClick={() => navigate("/alert-rules")} 
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Bell className="h-4 w-4" />
+                Configurar Alertas Automáticas
               </Button>
               <Button onClick={onCreate} className="bg-foreground text-background hover:bg-foreground/90">
                 Nueva Plantilla
