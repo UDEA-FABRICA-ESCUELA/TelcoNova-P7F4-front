@@ -1,5 +1,5 @@
 // Servicio de autenticación para conectar con el backend TelcoNova
-const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8080/api/auth';
+const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'https://telconova-p7f4-back-production.up.railway.app/api/v1/auth';
 // Modo mock para pruebas sin backend (cambiar a 'false' cuando el backend esté disponible)
 const USE_MOCK_AUTH = import.meta.env.VITE_USE_MOCK_AUTH !== 'false';
 
@@ -173,11 +173,41 @@ class AuthService {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(credentials),
+          body: JSON.stringify({
+            username: credentials.username,
+            password: credentials.password
+          }),
         });
 
         if (!response.ok) {
-          // Login fallido
+          const errorData = await response.json().catch(() => ({}));
+          
+          // Si el backend devuelve información sobre intentos fallidos, usarla
+          if (errorData.remainingAttempts !== undefined) {
+            const remaining = errorData.remainingAttempts;
+            
+            // Sincronizar los intentos con el backend
+            this.failedAttempts.set(credentials.username, MAX_ATTEMPTS - remaining);
+            this.saveState();
+            
+            if (remaining > 0) {
+              throw {
+                message: errorData.message || `Credenciales incorrectas. Le quedan ${remaining} intento${remaining > 1 ? 's' : ''}.`,
+                remainingAttempts: remaining
+              } as AuthError;
+            } else {
+              // Si no quedan intentos, bloquear
+              this.blockUntil.set(credentials.username, Date.now() + BLOCK_DURATION);
+              this.saveState();
+              throw {
+                message: errorData.message || 'Cuenta bloqueada por intentos fallidos.',
+                isBlocked: true,
+                remainingAttempts: 0
+              } as AuthError;
+            }
+          }
+          
+          // Si el backend no devuelve info de intentos, usar lógica local
           const attempts = this.recordFailedAttempt(credentials.username);
           const remaining = MAX_ATTEMPTS - attempts;
           

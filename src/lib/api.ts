@@ -113,8 +113,8 @@ export function validateTemplateContent(content: string): { isValid: boolean; er
 }
 
 // API que se conectará con el backend Spring Boot
-// Base URL del backend (ajustar según tu configuración)
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// Base URL del backend TelcoNova en Railway
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://telconova-p7f4-back-production.up.railway.app/api/v1';
 
 /**
  * Obtiene todas las plantillas desde el backend
