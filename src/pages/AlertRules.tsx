@@ -39,77 +39,10 @@ interface AuditLog {
 const AlertRules = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [rules, setRules] = useState<AlertRule[]>([
-    {
-      id: 1,
-      name: "Notificación de Nuevo Pedido",
-      triggerEvent: "Pedido finalizado",
-      messageType: "Transaccional",
-      targetAudience: "Administradores",
-      channels: ["email", "whatsapp", "push"],
-      templateId: 1,
-      isActive: true,
-      createdAt: "2025-11-10T11:00:00",
-      updatedAt: "2025-11-10T11:00:00",
-      createdBy: "admin",
-      updatedBy: "admin"
-    },
-    {
-      id: 2,
-      name: "Alerta de Stock Bajo",
-      triggerEvent: "Stock Bajo",
-      messageType: "Advertencia",
-      targetAudience: "Administradores",
-      channels: ["email", "whatsapp"],
-      templateId: 2,
-      isActive: true,
-      createdAt: "2025-05-10T09:15:00",
-      updatedAt: "2025-05-10T09:15:00",
-      createdBy: "admin",
-      updatedBy: "admin"
-    },
-    {
-      id: 3,
-      name: "Bienvenida a Nuevos Usuarios",
-      triggerEvent: "Nuevo Usuario Registrado",
-      messageType: "Informativo",
-      targetAudience: "Usuarios Registrados",
-      channels: ["email", "whatsapp"],
-      templateId: 3,
-      isActive: false,
-      createdAt: "2025-07-10T11:20:00",
-      updatedAt: "2025-07-10T11:20:00",
-      createdBy: "admin",
-      updatedBy: "admin"
-    }
-  ]);
+  // Mock data comentado - REQUIERE BACKEND ACTIVO
+  const [rules, setRules] = useState<AlertRule[]>([]);
 
-  const [auditLogs] = useState<AuditLog[]>([
-    {
-      id: 1,
-      user: "admin",
-      action: "Creación",
-      date: "2025-01-08",
-      time: "14:30:00",
-      description: "Regla 'Notificación de Nuevo Pedido' creada"
-    },
-    {
-      id: 2,
-      user: "admin",
-      action: "Modificación",
-      date: "2025-01-08",
-      time: "15:45:00",
-      description: "Regla 'Alerta de Stock Bajo' modificada"
-    },
-    {
-      id: 3,
-      user: "admin",
-      action: "Desactivación",
-      date: "2025-01-08",
-      time: "16:20:00",
-      description: "Regla 'Bienvenida a Nuevos Usuarios' desactivada"
-    }
-  ]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<AlertRule | null>(null);
@@ -141,24 +74,54 @@ const AlertRules = () => {
     }
   };
 
-  const handleToggleRule = (id: number) => {
-    setRules(rules.map(rule => 
-      rule.id === id ? { ...rule, isActive: !rule.isActive } : rule
-    ));
-    // Aquí se llamaría al endpoint: PATCH /alert-rules/{id}/toggle
-    toast({
-      title: "Estado actualizado",
-      description: "El estado de la regla se ha actualizado correctamente"
-    });
+  const handleToggleRule = async (id: number) => {
+    try {
+      // PATCH /alert-rules/{id}/toggle
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/alert-rules/${id}/toggle`, {
+        method: 'PATCH',
+      });
+
+      if (response.ok) {
+        setRules(rules.map(rule => 
+          rule.id === id ? { ...rule, isActive: !rule.isActive } : rule
+        ));
+        toast({
+          title: "Estado actualizado",
+          description: "El estado de la regla se ha actualizado correctamente"
+        });
+      }
+    } catch (error) {
+      console.error("Error al cambiar estado:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el estado de la regla",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeleteRule = (id: number) => {
-    setRules(rules.filter(rule => rule.id !== id));
-    // Aquí se llamaría al endpoint: DELETE /alert-rules/{id}
-    toast({
-      title: "Regla eliminada",
-      description: "La regla se ha eliminado correctamente"
-    });
+  const handleDeleteRule = async (id: number) => {
+    try {
+      // DELETE /alert-rules/{id}
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/alert-rules/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setRules(rules.filter(rule => rule.id !== id));
+        toast({
+          title: "Regla eliminada",
+          description: "La regla se ha eliminado correctamente"
+        });
+      }
+    } catch (error) {
+      console.error("Error al eliminar regla:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar la regla",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleEditRule = (rule: AlertRule) => {
@@ -174,7 +137,7 @@ const AlertRules = () => {
     setIsDialogOpen(true);
   };
 
-  const handleSaveRule = () => {
+  const handleSaveRule = async () => {
     if (!formData.name || !formData.triggerEvent || !formData.messageType || !formData.targetAudience || formData.channels.length === 0) {
       toast({
         title: "Error",
@@ -184,47 +147,68 @@ const AlertRules = () => {
       return;
     }
 
-    if (editingRule) {
-      // Editar regla existente
-      setRules(rules.map(rule => 
-        rule.id === editingRule.id 
-          ? { ...rule, ...formData, updatedAt: new Date().toISOString() }
-          : rule
-      ));
-      // Aquí se llamaría al endpoint: PUT /alert-rules/{id}
-      toast({
-        title: "Regla actualizada",
-        description: "La regla se ha actualizado correctamente"
+    try {
+      if (editingRule) {
+        // PUT /alert-rules/{id}
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/alert-rules/${editingRule.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        if (response.ok) {
+          const updatedRule = await response.json();
+          setRules(rules.map(rule => 
+            rule.id === editingRule.id ? updatedRule : rule
+          ));
+          toast({
+            title: "Regla actualizada",
+            description: "La regla se ha actualizado correctamente"
+          });
+        }
+      } else {
+        // POST /alert-rules
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/alert-rules`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...formData,
+            isActive: true
+          }),
+        });
+
+        if (response.ok) {
+          const newRule = await response.json();
+          setRules([...rules, newRule]);
+          toast({
+            title: "Regla creada",
+            description: "La regla se ha creado correctamente"
+          });
+        }
+      }
+
+      setIsDialogOpen(false);
+      setEditingRule(null);
+      setFormData({
+        name: "",
+        triggerEvent: "",
+        messageType: "",
+        targetAudience: "",
+        channels: [],
+        templateId: 1
       });
-    } else {
-      // Crear nueva regla
-      const newRule: AlertRule = {
-        id: Math.max(...rules.map(r => r.id)) + 1,
-        ...formData,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: "admin",
-        updatedBy: "admin"
-      };
-      setRules([...rules, newRule]);
-      // Aquí se llamaría al endpoint: POST /alert-rules
+    } catch (error) {
+      console.error("Error al guardar regla:", error);
       toast({
-        title: "Regla creada",
-        description: "La regla se ha creado correctamente"
+        title: "Error",
+        description: "No se pudo guardar la regla",
+        variant: "destructive"
       });
     }
-
-    setIsDialogOpen(false);
-    setEditingRule(null);
-    setFormData({
-      name: "",
-      triggerEvent: "",
-      messageType: "",
-      targetAudience: "",
-      channels: [],
-      templateId: 1
-    });
   };
 
   const toggleChannel = (channel: string) => {
@@ -242,10 +226,29 @@ const AlertRules = () => {
   };
 
   useEffect(() => {
-    // Aquí se consultarían los endpoints del backend:
-    // GET /alert-rules
-    // GET /alert-rules/audit
-    // GET /message-templates
+    const fetchData = async () => {
+      try {
+        // GET /alert-rules
+        const rulesResponse = await fetch(`${import.meta.env.VITE_API_URL}/alert-rules`);
+        if (rulesResponse.ok) {
+          const rulesData = await rulesResponse.json();
+          setRules(rulesData);
+        }
+
+        // GET /alert-rules/audit
+        const auditResponse = await fetch(`${import.meta.env.VITE_API_URL}/alert-rules/audit`);
+        if (auditResponse.ok) {
+          const auditData = await auditResponse.json();
+          setAuditLogs(auditData);
+        }
+
+        // GET /message-templates (para el selector de plantillas en el futuro)
+      } catch (error) {
+        console.error("Error al cargar datos del backend:", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   return (

@@ -27,47 +27,47 @@ interface ErrorLog {
 const NotificationQueue = () => {
   const navigate = useNavigate();
   
-  // Mock data - esto se reemplazará con datos reales del backend
+  // Mock data comentado - REQUIERE BACKEND ACTIVO
   const [metrics, setMetrics] = useState<NotificationMetrics>({
-    serviceStatus: "active",
-    sent: 23,
-    pending: 23,
-    failed: 23,
-    successRate: 97.8
+    serviceStatus: "inactive",
+    sent: 0,
+    pending: 0,
+    failed: 0,
+    successRate: 0
   });
 
-  const [errorLogs] = useState<ErrorLog[]>([
-    {
-      id: "MSG-001",
-      module: "MSG-003",
-      error: "Número de WhatsApp no válido",
-      date: "2025-01-08 18:30:20",
-      attempts: 3
-    },
-    {
-      id: "MSG-02",
-      module: "MSG-002",
-      error: "Rate limit exceeded para SMS",
-      date: "2025-01-08 14:23:20",
-      attempts: 3
-    },
-    {
-      id: "MSG-001",
-      module: "MSG-001",
-      error: "Servidor de email temporalmente no disponible",
-      date: "2025-01-08 14:25:50",
-      attempts: 3
-    }
-  ]);
+  const [errorLogs, setErrorLogs] = useState<ErrorLog[]>([]);
 
-  // Actualización automática cada 30 segundos
+  // Cargar datos del backend al montar el componente
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // GET /notifications/status
+        const statusResponse = await fetch(`${import.meta.env.VITE_API_URL}/notifications/status`);
+        // GET /notifications/metrics
+        const metricsResponse = await fetch(`${import.meta.env.VITE_API_URL}/notifications/metrics`);
+        // GET /notifications/errors
+        const errorsResponse = await fetch(`${import.meta.env.VITE_API_URL}/notifications/errors`);
+        
+        if (metricsResponse.ok) {
+          const metricsData = await metricsResponse.json();
+          setMetrics(metricsData);
+        }
+        
+        if (errorsResponse.ok) {
+          const errorsData = await errorsResponse.json();
+          setErrorLogs(errorsData);
+        }
+      } catch (error) {
+        console.error("Error al cargar datos del backend:", error);
+      }
+    };
+
+    fetchData();
+
+    // Actualización automática cada 30 segundos
     const interval = setInterval(() => {
-      // Aquí se consultarían los endpoints del backend:
-      // GET /notifications/status
-      // GET /notifications/metrics
-      // GET /notifications/errors
-      console.log("Actualizando métricas...");
+      fetchData();
     }, 30000);
 
     return () => clearInterval(interval);

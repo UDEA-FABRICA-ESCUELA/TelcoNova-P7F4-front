@@ -132,46 +132,42 @@ class AuthService {
     try {
       let data: LoginResponse;
       
-      // MODO MOCK: Para pruebas sin backend
-      if (USE_MOCK_AUTH) {
-        console.log('🔧 [MODO MOCK] Autenticación en modo desarrollo');
-        
-        // Simular delay de red
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Buscar usuario en mock
-        const mockUser = MOCK_USERS.find(
-          u => u.username === credentials.username && u.password === credentials.password
-        );
-        
-        if (!mockUser) {
-          // Login fallido - mock
-          const attempts = this.recordFailedAttempt(credentials.username);
-          const remaining = MAX_ATTEMPTS - attempts;
-          
-          if (remaining > 0) {
-            throw {
-              message: `Credenciales incorrectas. Le quedan ${remaining} intento${remaining > 1 ? 's' : ''}.`,
-              remainingAttempts: remaining
-            } as AuthError;
-          } else {
-            throw {
-              message: 'Cuenta bloqueada por intentos fallidos.',
-              isBlocked: true,
-              remainingAttempts: 0
-            } as AuthError;
-          }
-        }
-        
-        // Login exitoso - mock
-        data = {
-          token: mockUser.token,
-          username: mockUser.username,
-          message: `¡Bienvenido de vuelta, ${mockUser.username}!`
-        };
-      } 
+      // MODO MOCK: Para pruebas sin backend (COMENTADO - REQUIERE BACKEND ACTIVO)
+      // if (USE_MOCK_AUTH) {
+      //   console.log('🔧 [MODO MOCK] Autenticación en modo desarrollo');
+      //   
+      //   await new Promise(resolve => setTimeout(resolve, 500));
+      //   
+      //   const mockUser = MOCK_USERS.find(
+      //     u => u.username === credentials.username && u.password === credentials.password
+      //   );
+      //   
+      //   if (!mockUser) {
+      //     const attempts = this.recordFailedAttempt(credentials.username);
+      //     const remaining = MAX_ATTEMPTS - attempts;
+      //     
+      //     if (remaining > 0) {
+      //       throw {
+      //         message: `Credenciales incorrectas. Le quedan ${remaining} intento${remaining > 1 ? 's' : ''}.`,
+      //         remainingAttempts: remaining
+      //       } as AuthError;
+      //     } else {
+      //       throw {
+      //         message: 'Cuenta bloqueada por intentos fallidos.',
+      //         isBlocked: true,
+      //         remainingAttempts: 0
+      //       } as AuthError;
+      //     }
+      //   }
+      //   
+      //   data = {
+      //     token: mockUser.token,
+      //     username: mockUser.username,
+      //     message: `¡Bienvenido de vuelta, ${mockUser.username}!`
+      //   };
+      // } 
       // MODO REAL: Conectar con backend TelcoNova
-      else {
+      {
         const response = await fetch(`${AUTH_API_URL}/login`, {
           method: 'POST',
           headers: {

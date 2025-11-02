@@ -129,9 +129,10 @@ export async function getAllTemplates(): Promise<MessageTemplateDto[]> {
     return await response.json();
   } catch (error) {
     console.error('Error al obtener plantillas:', error);
-    // Fallback a localStorage en desarrollo
-    await delay(300);
-    return getStoredTemplates();
+    // Fallback a localStorage en desarrollo (COMENTADO - REQUIERE BACKEND ACTIVO)
+    // await delay(300);
+    // return getStoredTemplates();
+    throw error;
   }
 }
 
@@ -151,10 +152,11 @@ export async function getTemplate(id: number): Promise<MessageTemplateDto | null
     return await response.json();
   } catch (error) {
     console.error('Error al obtener plantilla:', error);
-    // Fallback a localStorage en desarrollo
-    await delay(200);
-    const templates = getStoredTemplates();
-    return templates.find(t => t.id === id) || null;
+    // Fallback a localStorage en desarrollo (COMENTADO - REQUIERE BACKEND ACTIVO)
+    // await delay(200);
+    // const templates = getStoredTemplates();
+    // return templates.find(t => t.id === id) || null;
+    throw error;
   }
 }
 
@@ -186,28 +188,23 @@ export async function createTemplate(payload: CreateTemplateRequest): Promise<Me
     return await response.json();
   } catch (error) {
     console.error('Error al crear plantilla:', error);
-    // Fallback a localStorage en desarrollo
-    await delay(500);
-    
-    const templates = getStoredTemplates();
-    
-    // Verificar nombre único
-    if (templates.some(t => t.name.toLowerCase() === payload.name.toLowerCase())) {
-      throw new Error('Ya existe una plantilla con ese nombre');
-    }
-
-    const newTemplate: MessageTemplateDto = {
-      id: generateId(),
-      name: payload.name,
-      content: payload.content,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    const updatedTemplates = [...templates, newTemplate];
-    saveTemplates(updatedTemplates);
-    
-    return newTemplate;
+    // Fallback a localStorage en desarrollo (COMENTADO - REQUIERE BACKEND ACTIVO)
+    // await delay(500);
+    // const templates = getStoredTemplates();
+    // if (templates.some(t => t.name.toLowerCase() === payload.name.toLowerCase())) {
+    //   throw new Error('Ya existe una plantilla con ese nombre');
+    // }
+    // const newTemplate: MessageTemplateDto = {
+    //   id: generateId(),
+    //   name: payload.name,
+    //   content: payload.content,
+    //   createdAt: new Date().toISOString(),
+    //   updatedAt: new Date().toISOString(),
+    // };
+    // const updatedTemplates = [...templates, newTemplate];
+    // saveTemplates(updatedTemplates);
+    // return newTemplate;
+    throw error;
   }
 }
 
@@ -241,37 +238,31 @@ export async function updateTemplate(id: number, payload: UpdateTemplateRequest)
     return await response.json();
   } catch (error) {
     console.error('Error al actualizar plantilla:', error);
-    // Fallback a localStorage en desarrollo
-    await delay(400);
-    
-    const templates = getStoredTemplates();
-    const templateIndex = templates.findIndex(t => t.id === id);
-    
-    if (templateIndex === -1) {
-      throw new Error('Plantilla no encontrada');
-    }
-
-    // Verificar nombre único si se cambia
-    if (payload.name) {
-      const existingTemplate = templates.find(t => 
-        t.name.toLowerCase() === payload.name!.toLowerCase() && t.id !== id
-      );
-      if (existingTemplate) {
-        throw new Error('Ya existe otra plantilla con ese nombre');
-      }
-    }
-
-    const updatedTemplate: MessageTemplateDto = {
-      ...templates[templateIndex],
-      ...payload,
-      updatedAt: new Date().toISOString(),
-    };
-
-    const updatedTemplates = [...templates];
-    updatedTemplates[templateIndex] = updatedTemplate;
-    saveTemplates(updatedTemplates);
-    
-    return updatedTemplate;
+    // Fallback a localStorage en desarrollo (COMENTADO - REQUIERE BACKEND ACTIVO)
+    // await delay(400);
+    // const templates = getStoredTemplates();
+    // const templateIndex = templates.findIndex(t => t.id === id);
+    // if (templateIndex === -1) {
+    //   throw new Error('Plantilla no encontrada');
+    // }
+    // if (payload.name) {
+    //   const existingTemplate = templates.find(t => 
+    //     t.name.toLowerCase() === payload.name!.toLowerCase() && t.id !== id
+    //   );
+    //   if (existingTemplate) {
+    //     throw new Error('Ya existe otra plantilla con ese nombre');
+    //   }
+    // }
+    // const updatedTemplate: MessageTemplateDto = {
+    //   ...templates[templateIndex],
+    //   ...payload,
+    //   updatedAt: new Date().toISOString(),
+    // };
+    // const updatedTemplates = [...templates];
+    // updatedTemplates[templateIndex] = updatedTemplate;
+    // saveTemplates(updatedTemplates);
+    // return updatedTemplate;
+    throw error;
   }
 }
 
@@ -291,17 +282,15 @@ export async function deleteTemplate(id: number): Promise<void> {
     }
   } catch (error) {
     console.error('Error al eliminar plantilla:', error);
-    // Fallback a localStorage en desarrollo
-    await delay(300);
-    
-    const templates = getStoredTemplates();
-    const filteredTemplates = templates.filter(t => t.id !== id);
-    
-    if (filteredTemplates.length === templates.length) {
-      throw new Error('Plantilla no encontrada');
-    }
-    
-    saveTemplates(filteredTemplates);
+    // Fallback a localStorage en desarrollo (COMENTADO - REQUIERE BACKEND ACTIVO)
+    // await delay(300);
+    // const templates = getStoredTemplates();
+    // const filteredTemplates = templates.filter(t => t.id !== id);
+    // if (filteredTemplates.length === templates.length) {
+    //   throw new Error('Plantilla no encontrada');
+    // }
+    // saveTemplates(filteredTemplates);
+    throw error;
   }
 }
 
