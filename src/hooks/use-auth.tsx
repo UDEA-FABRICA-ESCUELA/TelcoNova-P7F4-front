@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService, LoginRequest, LoginResponse, AuthError } from '@/lib/auth';
+import { authService, LoginRequest, AuthResponse, AuthError } from '@/lib/auth';
 import { toast } from 'sonner';
 
 const INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutos
@@ -53,10 +53,10 @@ export const useAuth = () => {
   const login = useCallback(async (credentials: LoginRequest): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response: LoginResponse = await authService.login(credentials);
+      const response: AuthResponse = await authService.login(credentials);
       setIsAuthenticated(true);
       setUsername(credentials.username);
-      toast.success(response.message || `¡Bienvenido de vuelta, ${credentials.username}!`);
+      toast.success(response.welcomeMessage || `¡Bienvenido de vuelta, ${credentials.username}!`);
       return true;
     } catch (error) {
       const authError = error as AuthError;
