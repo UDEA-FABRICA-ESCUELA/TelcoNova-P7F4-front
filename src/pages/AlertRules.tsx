@@ -11,553 +11,625 @@ import { ArrowLeft, Bell, Plus, Edit, Trash2, Mail, MessageSquare, Phone, BellRi
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge"; // Asumiendo que usas Badge para la acción
 
-interface AlertRule {
-  id: number;
-  name: string;
-  triggerEvent: string;
-  messageType: string;
-  targetAudience: string;
-  channels: string[];
-  templateId: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  updatedBy: string;
+// 🟢 IMPORTACIONES DE API Y CONSTANTES
+import {
+    AlertRuleDto,
+    MessageTemplateDto,
+    getAllAlertRules,
+    createAlertRule,
+    deleteAlertRule,
+    updateAlertRule,
+    getAllTemplates,
+    authFetch,
+    API_BASE_URL,
+    activateAlertRule,
+    deactivateAlertRule,
+} from "@/lib/api";
+
+// 🟢 DEFINICIÓN DE CONSTANTES
+const EVENT_TRIGGERS_OPTIONS = [
+    { value: 'USER_REGISTERED', label: 'Nuevo usuario registrado' },
+    { value: 'TICKET_CREATED', label: 'Nuevo ticket creado' },
+    { value: 'TICKET_ASSIGNED', label: 'Ticket asignado a técnico' },
+    { value: 'TICKET_STATUS_CHANGED', label: 'Estado de ticket cambiado' },
+    { value: 'SLA_WARNING', label: 'Advertencia de SLA próximo a vencer' },
+    { value: 'SLA_BREACHED', label: 'SLA violado' },
+];
+
+const NOTIFICATION_CHANNEL_OPTIONS = [
+    { value: 'EMAIL', label: 'Correo Electrónico' },
+    { value: 'SMS', label: 'Mensaje de Texto' },
+    { value: 'PUSH', label: 'Notificación Push' },
+    { value: 'WHATSAPP', label: 'WhatsApp' },
+];
+
+const TARGET_AUDIENCE_OPTIONS = [
+    { value: 'CLIENT', label: 'Cliente Final' },
+    { value: 'TECHNICIAN', label: 'Técnico Asignado' },
+    { value: 'SUPERVISOR', label: 'Supervisor/Administrador' },
+];
+
+type AlertRule = AlertRuleDto;
+
+// 🟢 INTERFAZ DEL FORMULARIO
+interface AlertRuleForm {
+    name: string;
+    description: string;
+    eventTrigger: string;
+    templateId: number | null;
+    targetAudience: string;
+    channel: string;
 }
 
+// 🟢 INTERFAZ DE AUDITORÍA: Corregida para coincidir con AlertRuleAuditDto de Java
 interface AuditLog {
-  id: number;
-  user: string;
-  action: string;
-  date: string;
-  time: string;
-  description: string;
+    id: number;
+    ruleId: number;
+    ruleName: string;
+    action: string;
+    performedBy: string; // ⬅️ Antes era 'user', ahora es 'performedBy'
+    timestamp: string; // ⬅️ Viene como string ISO del LocalDateTime de Java
+    changes: string | null;
+    ipAddress: string;
 }
 
 const AlertRules = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  // Mock data comentado - REQUIERE BACKEND ACTIVO
-  const [rules, setRules] = useState<AlertRule[]>([]);
+    const navigate = useNavigate();
+    const { toast } = useToast();
 
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+    // 🟢 ESTADOS
+    const [rules, setRules] = useState<AlertRule[]>([]);
+    const [templates, setTemplates] = useState<MessageTemplateDto[]>([]);
+    const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingRule, setEditingRule] = useState<AlertRule | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    triggerEvent: "",
-    messageType: "",
-    targetAudience: "",
-    channels: [] as string[],
-    templateId: 1
-  });
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [editingRule, setEditingRule] = useState<AlertRule | null>(null);
 
-  const totalRules = rules.length;
-  const activeRules = rules.filter(r => r.isActive).length;
-  const inactiveRules = rules.filter(r => !r.isActive).length;
-
-  const getChannelIcon = (channel: string) => {
-    switch (channel) {
-      case "email":
-        return <Mail className="h-4 w-4" />;
-      case "whatsapp":
-        return <MessageSquare className="h-4 w-4" />;
-      case "sms":
-        return <Phone className="h-4 w-4" />;
-      case "push":
-        return <BellRing className="h-4 w-4" />;
-      default:
-        return null;
-    }
-  };
-
-  const handleToggleRule = async (id: number) => {
-    try {
-      // PATCH /alert-rules/{id}/toggle
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/alert-rules/${id}/toggle`, {
-        method: 'PATCH',
-      });
-
-      if (response.ok) {
-        setRules(rules.map(rule => 
-          rule.id === id ? { ...rule, isActive: !rule.isActive } : rule
-        ));
-        toast({
-          title: "Estado actualizado",
-          description: "El estado de la regla se ha actualizado correctamente"
-        });
-      }
-    } catch (error) {
-      console.error("Error al cambiar estado:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo actualizar el estado de la regla",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleDeleteRule = async (id: number) => {
-    try {
-      // DELETE /alert-rules/{id}
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/alert-rules/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setRules(rules.filter(rule => rule.id !== id));
-        toast({
-          title: "Regla eliminada",
-          description: "La regla se ha eliminado correctamente"
-        });
-      }
-    } catch (error) {
-      console.error("Error al eliminar regla:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo eliminar la regla",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleEditRule = (rule: AlertRule) => {
-    setEditingRule(rule);
-    setFormData({
-      name: rule.name,
-      triggerEvent: rule.triggerEvent,
-      messageType: rule.messageType,
-      targetAudience: rule.targetAudience,
-      channels: rule.channels,
-      templateId: rule.templateId
-    });
-    setIsDialogOpen(true);
-  };
-
-  const handleSaveRule = async () => {
-    if (!formData.name || !formData.triggerEvent || !formData.messageType || !formData.targetAudience || formData.channels.length === 0) {
-      toast({
-        title: "Error",
-        description: "Todos los campos son obligatorios",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      if (editingRule) {
-        // PUT /alert-rules/{id}
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/alert-rules/${editingRule.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
-
-        if (response.ok) {
-          const updatedRule = await response.json();
-          setRules(rules.map(rule => 
-            rule.id === editingRule.id ? updatedRule : rule
-          ));
-          toast({
-            title: "Regla actualizada",
-            description: "La regla se ha actualizado correctamente"
-          });
-        }
-      } else {
-        // POST /alert-rules
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/alert-rules`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            ...formData,
-            isActive: true
-          }),
-        });
-
-        if (response.ok) {
-          const newRule = await response.json();
-          setRules([...rules, newRule]);
-          toast({
-            title: "Regla creada",
-            description: "La regla se ha creado correctamente"
-          });
-        }
-      }
-
-      setIsDialogOpen(false);
-      setEditingRule(null);
-      setFormData({
+    // 🟢 ESTADO DE FORMULARIO
+    const [formData, setFormData] = useState<AlertRuleForm>({
         name: "",
-        triggerEvent: "",
-        messageType: "",
+        description: "",
+        eventTrigger: "",
+        templateId: null,
         targetAudience: "",
-        channels: [],
-        templateId: 1
-      });
-    } catch (error) {
-      console.error("Error al guardar regla:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo guardar la regla",
-        variant: "destructive"
-      });
-    }
-  };
+        channel: "",
+    });
 
-  const toggleChannel = (channel: string) => {
-    if (formData.channels.includes(channel)) {
-      setFormData({
-        ...formData,
-        channels: formData.channels.filter(c => c !== channel)
-      });
-    } else {
-      setFormData({
-        ...formData,
-        channels: [...formData.channels, channel]
-      });
-    }
-  };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // GET /alert-rules
-        const rulesResponse = await fetch(`${import.meta.env.VITE_API_URL}/alert-rules`);
-        if (rulesResponse.ok) {
-          const rulesData = await rulesResponse.json();
-          setRules(rulesData);
+    const totalRules = rules.length;
+    const activeRules = rules.filter(r => r.isActive).length;
+    const inactiveRules = rules.filter(r => !r.isActive).length;
+
+    const getChannelIcon = (channel: string) => {
+        switch (channel.toLowerCase()) {
+            case "email":
+                return <Mail className="h-4 w-4" />;
+            case "whatsapp":
+                return <MessageSquare className="h-4 w-4" />;
+            case "sms":
+            case "push":
+                return <BellRing className="h-4 w-4" />;
+            default:
+                return null;
         }
-
-        // GET /alert-rules/audit
-        const auditResponse = await fetch(`${import.meta.env.VITE_API_URL}/alert-rules/audit`);
-        if (auditResponse.ok) {
-          const auditData = await auditResponse.json();
-          setAuditLogs(auditData);
-        }
-
-        // GET /message-templates (para el selector de plantillas en el futuro)
-      } catch (error) {
-        console.error("Error al cargar datos del backend:", error);
-      }
     };
 
-    fetchData();
-  }, []);
+    const handleToggleRule = async (id: number, currentStatus: boolean) => {
+        try {
+            let resultRule: AlertRuleDto;
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        <Button
-          variant="outline"
-          onClick={() => navigate("/")}
-          className="mb-6 flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Volver
-        </Button>
+            if (currentStatus) {
+                resultRule = await deactivateAlertRule(id);
+            } else {
+                resultRule = await activateAlertRule(id);
+            }
 
-        {/* Encabezado */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <div className="bg-green-500 p-3 rounded-lg">
-              <Bell className="h-6 w-6 text-white" />
+            setRules(rules.map(rule =>
+                rule.id === id ? resultRule : rule
+            ));
+
+            toast({
+                title: "Estado actualizado",
+                description: `La regla se ha ${resultRule.isActive ? 'activado' : 'desactivado'} correctamente.`
+            });
+
+            // 🟢 OPCIONAL: Recargar logs de auditoría después de una acción
+            await fetchAuditLogs(); // Si implementas esta función
+            // Si no implementas la recarga aquí, se verá después de un refresh o de cambiar de tab
+
+        } catch (error) {
+            console.error("Error al cambiar estado:", error);
+            toast({
+                title: "Error",
+                description: "No se pudo actualizar el estado de la regla.",
+                variant: "destructive"
+            });
+        }
+    };
+
+    const handleDeleteRule = async (id: number) => {
+        try {
+            await deleteAlertRule(id);
+
+            setRules(rules.filter(rule => rule.id !== id));
+            toast({
+                title: "Regla eliminada",
+                description: "La regla se ha eliminado correctamente"
+            });
+            // 🟢 OPCIONAL: Recargar logs de auditoría
+            await fetchAuditLogs();
+        } catch (error) {
+            console.error("Error al eliminar regla:", error);
+            toast({
+                title: "Error",
+                description: "No se pudo eliminar la regla",
+                variant: "destructive"
+            });
+        }
+    };
+
+    const handleEditRule = (rule: AlertRule) => {
+        setEditingRule(rule);
+        setFormData({
+            name: rule.name,
+            description: rule.description || "",
+            eventTrigger: rule.triggerEvent || "",
+            templateId: rule.templateId,
+            targetAudience: rule.targetAudience,
+            channel: rule.channel,
+        });
+        setIsDialogOpen(true);
+    };
+
+    const handleSaveRule = async () => {
+        // 🟢 VALIDACIÓN
+        if (!formData.name || !formData.eventTrigger || !formData.targetAudience || !formData.channel || !formData.templateId || formData.templateId <= 0) {
+            toast({
+                title: "Error",
+                description: "Todos los campos obligatorios deben estar llenos y la plantilla debe ser seleccionada.",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        const payload = {
+            name: formData.name,
+            description: formData.description,
+            eventTrigger: formData.eventTrigger,
+            templateId: formData.templateId,
+            targetAudience: formData.targetAudience,
+            channel: formData.channel,
+            // Priority y isActive se manejan en el backend
+        };
+
+
+        try {
+            let resultRule;
+            if (editingRule) {
+                resultRule = await updateAlertRule(editingRule.id, payload);
+
+                setRules(rules.map(rule =>
+                    rule.id === editingRule.id ? resultRule : rule
+                ));
+                toast({
+                    title: "Regla actualizada",
+                    description: "La regla se ha actualizado correctamente"
+                });
+            } else {
+                resultRule = await createAlertRule(payload);
+
+                setRules([...rules, resultRule]);
+                toast({
+                    title: "Regla creada",
+                    description: "La regla se ha creado correctamente"
+                });
+            }
+
+            setIsDialogOpen(false);
+            setEditingRule(null);
+            setFormData({
+                name: "",
+                description: "",
+                eventTrigger: "",
+                templateId: null,
+                targetAudience: "",
+                channel: "",
+            });
+            // 🟢 OPCIONAL: Recargar logs de auditoría
+            await fetchAuditLogs();
+        } catch (error) {
+            console.error("Error al guardar regla:", error);
+            toast({
+                title: "Error",
+                description: "No se pudo guardar la regla",
+                variant: "destructive"
+            });
+        }
+    };
+
+    // 🟢 FUNCIÓN DEDICADA PARA OBTENER LOGS (Opcional, si quieres refactorizar)
+    const fetchAuditLogs = async () => {
+        try {
+            // Asumo que el API ya tiene la función getAuditLogs() importada de api.ts
+            // Si no está, usa el metodo authFetch como fallback:
+            const auditResponse = await authFetch(`${API_BASE_URL}/alert-rules/audit-log`);
+            if (auditResponse.ok) {
+                const auditData: AuditLog[] = await auditResponse.json();
+                setAuditLogs(auditData);
+            } else {
+                console.error("Fallo al obtener logs de auditoría:", auditResponse.status);
+            }
+        } catch (error) {
+            console.error("Error al obtener logs de auditoría:", error);
+        }
+    }
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // 🟢 OBTENER REGLAS
+                const rulesData = await getAllAlertRules();
+                setRules(rulesData as AlertRule[]);
+
+                // 🟢 OBTENER PLANTILLAS
+                const templatesData = await getAllTemplates();
+                setTemplates(templatesData);
+
+                // 🟢 OBTENER AUDITORÍA
+                await fetchAuditLogs(); // Usamos la nueva función
+
+            } catch (error) {
+                console.error("Error al cargar datos del backend:", error);
+                toast({
+                    title: "Error de Conexión",
+                    description: "No se pudieron cargar las reglas o plantillas. Asegúrate de que el backend está activo.",
+                    variant: "destructive"
+                });
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const getEventLabel = (value: string) => EVENT_TRIGGERS_OPTIONS.find(o => o.value === value)?.label || value;
+    const getAudienceLabel = (value: string) => TARGET_AUDIENCE_OPTIONS.find(o => o.value === value)?.label || value;
+    const getTemplateName = (id: number) => templates.find(t => t.id === id)?.name || `ID: ${id} (Error)`;
+
+
+    return (
+        <div className="min-h-screen bg-gray-50 p-8">
+            <div className="max-w-7xl mx-auto">
+                <Button
+                    variant="outline"
+                    onClick={() => navigate("/")}
+                    className="mb-6 flex items-center gap-2"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Volver
+                </Button>
+
+                {/* Encabezado */}
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-green-500 p-3 rounded-lg">
+                            <Bell className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold text-foreground">CONFIGURACIÓN DE ALERTAS AUTOMÁTICAS</h1>
+                            <p className="text-muted-foreground">Crea, modifica y configura reglas disparadoras para alertas automáticas</p>
+                        </div>
+                    </div>
+
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button
+                                className="bg-black text-white hover:bg-black/90"
+                                onClick={() => {
+                                    setEditingRule(null);
+                                    setFormData({
+                                        name: "",
+                                        description: "",
+                                        eventTrigger: "",
+                                        templateId: null,
+                                        targetAudience: "",
+                                        channel: "",
+                                    });
+                                }}
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Nueva Regla
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                                <DialogTitle>{editingRule ? "Editar Regla" : "Nueva Regla de Notificación"}</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                                <div>
+                                    <Label htmlFor="name">Nombre de la regla</Label>
+                                    <Input
+                                        id="name"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        placeholder="Ej: Notificación de Nuevo Pedido"
+                                    />
+                                </div>
+
+                                {/* 🟢 EVENTO DISPARADOR */}
+                                <div>
+                                    <Label htmlFor="eventTrigger">Evento Disparador</Label>
+                                    <Select
+                                        value={formData.eventTrigger}
+                                        onValueChange={(value) => setFormData({ ...formData, eventTrigger: value })}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecciona un evento" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {EVENT_TRIGGERS_OPTIONS.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* 🟢 TIPO DE MENSAJE */}
+                                <div>
+                                    <Label htmlFor="templateId">Tipo de mensaje (Plantilla asociada)</Label>
+                                    <Select
+                                        value={formData.templateId ? formData.templateId.toString() : ""}
+                                        onValueChange={(value) => setFormData({ ...formData, templateId: parseInt(value) })}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecciona una plantilla" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {templates.map((template) => (
+                                                <SelectItem key={template.id} value={template.id.toString()}>
+                                                    {template.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* 🟢 PÚBLICO OBJETIVO */}
+                                <div>
+                                    <Label htmlFor="targetAudience">Público objetivo</Label>
+                                    <Select value={formData.targetAudience} onValueChange={(value) => setFormData({ ...formData, targetAudience: value })}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecciona un público" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {TARGET_AUDIENCE_OPTIONS.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* 🟢 CANALES DE ENVÍO */}
+                                <div>
+                                    <Label>Canal de envío (Selección única)</Label>
+                                    <Select value={formData.channel} onValueChange={(value) => setFormData({ ...formData, channel: value })}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecciona un canal" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {NOTIFICATION_CHANNEL_OPTIONS.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Nota: Tu backend solo permite un canal por regla.
+                                    </p>
+                                </div>
+
+
+                                <div className="flex justify-end gap-2 pt-4">
+                                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                                        Cancelar
+                                    </Button>
+                                    <Button onClick={handleSaveRule}>
+                                        {editingRule ? "Guardar Cambios" : "Crear Regla"}
+                                    </Button>
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                </div>
+
+                {/* Cards de totales */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <Card>
+                        <CardContent className="pt-6">
+                            <p className="text-sm font-medium text-muted-foreground mb-2">Total de reglas</p>
+                            <p className="text-3xl font-bold text-green-600">{totalRules}</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardContent className="pt-6">
+                            <p className="text-sm font-medium text-muted-foreground mb-2">Reglas activas</p>
+                            <p className="text-3xl font-bold text-green-600">{activeRules}</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardContent className="pt-6">
+                            <p className="text-sm font-medium text-muted-foreground mb-2">Reglas inactivas</p>
+                            <p className="text-3xl font-bold text-green-600">{inactiveRules}</p>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Tabs */}
+                <Tabs defaultValue="rules" className="w-full">
+                    <TabsList className="mb-4">
+                        <TabsTrigger value="rules">Reglas de Notificaciones</TabsTrigger>
+                        <TabsTrigger value="audit">Registro de Auditoría</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="rules">
+                        <Card>
+                            <CardContent className="pt-6">
+                                <h3 className="text-lg font-bold mb-4">REGLAS CONFIGURADAS</h3>
+                                <p className="text-sm text-muted-foreground mb-4">
+                                    Administra las reglas de notificación. Puedes crear, editar, eliminar o desactivar temporalmente cada regla.
+                                </p>
+                                <div className="rounded-lg overflow-hidden border">
+                                    <Table>
+                                        <TableHeader className="bg-gray-900">
+                                            <TableRow className="hover:bg-gray-900">
+                                                <TableHead className="text-white font-bold">Nombre</TableHead>
+                                                <TableHead className="text-white font-bold">Evento Disparador</TableHead>
+                                                <TableHead className="text-white font-bold">Plantilla</TableHead>
+                                                <TableHead className="text-white font-bold">Público</TableHead>
+                                                <TableHead className="text-white font-bold">Canal</TableHead>
+                                                <TableHead className="text-white font-bold">Estado</TableHead>
+                                                <TableHead className="text-white font-bold">Última Modificación</TableHead>
+                                                <TableHead className="text-white font-bold">Acciones</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {rules.map((rule) => (
+                                                <TableRow key={rule.id}>
+                                                    <TableCell className="font-medium">{rule.name}</TableCell>
+                                                    <TableCell>{getEventLabel(rule.triggerEvent)}</TableCell>
+                                                    <TableCell>{getTemplateName(rule.templateId)}</TableCell>
+                                                    <TableCell>{getAudienceLabel(rule.targetAudience)}</TableCell>
+                                                    <TableCell>
+                                                        <span className="text-muted-foreground">
+                                                            {getChannelIcon(rule.channel)}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-2">
+                                                            <Switch
+                                                                checked={rule.isActive}
+                                                                onCheckedChange={() => handleToggleRule(rule.id, rule.isActive)}
+                                                            />
+                                                            <span className="text-sm text-muted-foreground">
+                                                                {rule.isActive ? "Activo" : "Inactivo"}
+                                                            </span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>{new Date(rule.updatedAt).toLocaleString()}</TableCell>
+                                                    <TableCell>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => handleEditRule(rule)}
+                                                            >
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => handleDeleteRule(rule.id)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    {/* 🟢 TABS CONTENT DE AUDITORÍA CORREGIDO */}
+                    <TabsContent value="audit">
+                        <Card>
+                            <CardContent className="pt-6">
+                                <h3 className="text-lg font-bold mb-4">REGISTRO DE AUDITORÍA</h3>
+                                <div className="rounded-lg overflow-hidden border">
+                                    <Table>
+                                        <TableHeader className="bg-gray-900">
+                                            <TableRow className="hover:bg-gray-900">
+                                                <TableHead className="text-white font-bold">ID AUDITORÍA</TableHead>
+                                                <TableHead className="text-white font-bold">USUARIO</TableHead>
+                                                <TableHead className="text-white font-bold">ACCIÓN</TableHead>
+                                                <TableHead className="text-white font-bold">FECHA</TableHead>
+                                                <TableHead className="text-white font-bold">HORA</TableHead>
+                                                <TableHead className="text-white font-bold">DESCRIPCIÓN</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {auditLogs.map((log) => {
+                                                // 🟢 1. PROCESAR TIMESTAMP
+                                                const dateTime = log.timestamp ? new Date(log.timestamp) : null;
+                                                const dateStr = dateTime ? dateTime.toLocaleDateString() : 'N/A';
+                                                const timeStr = dateTime ? dateTime.toLocaleTimeString() : 'N/A';
+
+                                                // 🟢 2. PROCESAR CAMBIOS (JSON)
+                                                let descriptionContent: React.ReactNode;
+
+                                                try {
+                                                    if (log.changes && log.changes !== "{}") {
+                                                        const parsedChanges = JSON.parse(log.changes);
+                                                        // Mostrar el JSON formateado si es complejo
+                                                        descriptionContent = (
+                                                            <pre className="whitespace-pre-wrap text-xs bg-gray-50 p-1 rounded border overflow-auto max-h-24">
+                                                                {JSON.stringify(parsedChanges, null, 2)}
+                                                            </pre>
+                                                        );
+                                                    } else {
+                                                        // Descripción simple para CREATE/ACTIVATE/DEACTIVATE/DELETE
+                                                        descriptionContent = (
+                                                            <span>{log.action} de regla: **{log.ruleName || `ID ${log.ruleId}`}**</span>
+                                                        );
+                                                    }
+                                                } catch (e) {
+                                                    // Fallback si el JSON está mal
+                                                    descriptionContent = log.changes || "Sin detalles adicionales";
+                                                }
+
+
+                                                return (
+                                                    <TableRow key={log.id}>
+                                                        <TableCell className="font-medium">{log.id}</TableCell>
+                                                        {/* 🟢 USUARIO: Usa performedBy */}
+                                                        <TableCell className="font-medium">{log.performedBy || 'SYSTEM'}</TableCell>
+                                                        {/* 🟢 ACCIÓN: Usa Badge para estilo */}
+                                                        <TableCell>
+                                                            <Badge variant="secondary">{log.action}</Badge>
+                                                        </TableCell>
+                                                        {/* 🟢 FECHA */}
+                                                        <TableCell>{dateStr}</TableCell>
+                                                        {/* 🟢 HORA */}
+                                                        <TableCell>{timeStr}</TableCell>
+                                                        {/* 🟢 DESCRIPCIÓN: Usa la lógica de procesamiento */}
+                                                        <TableCell className="text-muted-foreground text-sm">
+                                                            {descriptionContent}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">CONFIGURACIÓN DE ALERTAS AUTOMÁTICAS</h1>
-              <p className="text-muted-foreground">Crea, modifica y configura reglas disparadoras para alertas automáticas</p>
-            </div>
-          </div>
-
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                className="bg-black text-white hover:bg-black/90"
-                onClick={() => {
-                  setEditingRule(null);
-                  setFormData({
-                    name: "",
-                    triggerEvent: "",
-                    messageType: "",
-                    targetAudience: "",
-                    channels: [],
-                    templateId: 1
-                  });
-                }}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nueva Regla
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>{editingRule ? "Editar Regla" : "Nueva Regla de Notificación"}</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Nombre de la regla</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Ej: Notificación de Nuevo Pedido"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="triggerEvent">Evento Disparador</Label>
-                  <Select value={formData.triggerEvent} onValueChange={(value) => setFormData({ ...formData, triggerEvent: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un evento" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Pedido finalizado">Pedido finalizado</SelectItem>
-                      <SelectItem value="Stock Bajo">Stock Bajo</SelectItem>
-                      <SelectItem value="Nuevo Usuario Registrado">Nuevo Usuario Registrado</SelectItem>
-                      <SelectItem value="Fallo en servicio">Fallo en servicio</SelectItem>
-                      <SelectItem value="Vencimiento de contrato">Vencimiento de contrato</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="messageType">Tipo de mensaje</Label>
-                  <Select value={formData.messageType} onValueChange={(value) => setFormData({ ...formData, messageType: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Informativo">Informativo</SelectItem>
-                      <SelectItem value="Advertencia">Advertencia</SelectItem>
-                      <SelectItem value="Transaccional">Transaccional</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="targetAudience">Público objetivo</Label>
-                  <Select value={formData.targetAudience} onValueChange={(value) => setFormData({ ...formData, targetAudience: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un público" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Clientes">Clientes</SelectItem>
-                      <SelectItem value="Técnicos">Técnicos</SelectItem>
-                      <SelectItem value="Administradores">Administradores</SelectItem>
-                      <SelectItem value="Usuarios Registrados">Usuarios Registrados</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Canales de envío</Label>
-                  <div className="flex gap-4 mt-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.channels.includes("email")}
-                        onChange={() => toggleChannel("email")}
-                        className="w-4 h-4"
-                      />
-                      <Mail className="h-4 w-4" />
-                      <span>Email</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.channels.includes("whatsapp")}
-                        onChange={() => toggleChannel("whatsapp")}
-                        className="w-4 h-4"
-                      />
-                      <MessageSquare className="h-4 w-4" />
-                      <span>WhatsApp</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.channels.includes("sms")}
-                        onChange={() => toggleChannel("sms")}
-                        className="w-4 h-4"
-                      />
-                      <Phone className="h-4 w-4" />
-                      <span>SMS</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.channels.includes("push")}
-                        onChange={() => toggleChannel("push")}
-                        className="w-4 h-4"
-                      />
-                      <BellRing className="h-4 w-4" />
-                      <span>Push</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button onClick={handleSaveRule}>
-                    {editingRule ? "Guardar Cambios" : "Crear Regla"}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
-
-        {/* Cards de totales */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm font-medium text-muted-foreground mb-2">Total de reglas</p>
-              <p className="text-3xl font-bold text-green-600">{totalRules}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm font-medium text-muted-foreground mb-2">Reglas activas</p>
-              <p className="text-3xl font-bold text-green-600">{activeRules}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm font-medium text-muted-foreground mb-2">Reglas inactivas</p>
-              <p className="text-3xl font-bold text-green-600">{inactiveRules}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Tabs */}
-        <Tabs defaultValue="rules" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="rules">Reglas de Notificaciones</TabsTrigger>
-            <TabsTrigger value="audit">Registro de Auditoría</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="rules">
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-bold mb-4">REGLAS CONFIGURADAS</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Administra las reglas de notificación. Puedes crear, editar, eliminar o desactivar temporalmente cada regla.
-                </p>
-                <div className="rounded-lg overflow-hidden border">
-                  <Table>
-                    <TableHeader className="bg-gray-900">
-                      <TableRow className="hover:bg-gray-900">
-                        <TableHead className="text-white font-bold">Nombre</TableHead>
-                        <TableHead className="text-white font-bold">Evento Disparador</TableHead>
-                        <TableHead className="text-white font-bold">Tipo</TableHead>
-                        <TableHead className="text-white font-bold">Público</TableHead>
-                        <TableHead className="text-white font-bold">Canales</TableHead>
-                        <TableHead className="text-white font-bold">Estado</TableHead>
-                        <TableHead className="text-white font-bold">Última Modificación</TableHead>
-                        <TableHead className="text-white font-bold">Acciones</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {rules.map((rule) => (
-                        <TableRow key={rule.id}>
-                          <TableCell className="font-medium">{rule.name}</TableCell>
-                          <TableCell>{rule.triggerEvent}</TableCell>
-                          <TableCell>{rule.messageType}</TableCell>
-                          <TableCell>{rule.targetAudience}</TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              {rule.channels.map((channel) => (
-                                <span key={channel} className="text-muted-foreground">
-                                  {getChannelIcon(channel)}
-                                </span>
-                              ))}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Switch
-                                checked={rule.isActive}
-                                onCheckedChange={() => handleToggleRule(rule.id)}
-                              />
-                              <span className="text-sm text-muted-foreground">
-                                {rule.isActive ? "Activo" : "Inactivo"}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>{new Date(rule.updatedAt).toLocaleString()}</TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleEditRule(rule)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleDeleteRule(rule.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="audit">
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-bold mb-4">REGISTRO DE AUDITORÍA</h3>
-                <div className="rounded-lg overflow-hidden border">
-                  <Table>
-                    <TableHeader className="bg-gray-900">
-                      <TableRow className="hover:bg-gray-900">
-                        <TableHead className="text-white font-bold">ID AUDITORÍA</TableHead>
-                        <TableHead className="text-white font-bold">USUARIO</TableHead>
-                        <TableHead className="text-white font-bold">ACCIÓN</TableHead>
-                        <TableHead className="text-white font-bold">FECHA</TableHead>
-                        <TableHead className="text-white font-bold">HORA</TableHead>
-                        <TableHead className="text-white font-bold">DESCRIPCIÓN</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {auditLogs.map((log) => (
-                        <TableRow key={log.id}>
-                          <TableCell className="font-medium">{log.id}</TableCell>
-                          <TableCell>{log.user}</TableCell>
-                          <TableCell>{log.action}</TableCell>
-                          <TableCell>{log.date}</TableCell>
-                          <TableCell>{log.time}</TableCell>
-                          <TableCell>{log.description}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default AlertRules;
