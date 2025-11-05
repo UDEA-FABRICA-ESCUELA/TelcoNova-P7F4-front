@@ -102,10 +102,9 @@ const Login = () => {
 
           <div className="text-center text-sm space-y-2">
             <div className="p-3 bg-muted/50 rounded-lg">
-              <p className="font-medium text-foreground mb-1">👤 Usuarios de prueba:</p>
+              <p className="font-medium text-foreground mb-1">👤 Usuario de prueba:</p>
               <div className="space-y-1 text-muted-foreground">
-                <p>• usuario1 / contraseña123</p>
-                <p>• admin / admin123</p>
+                <p>• admin_test1 / admin</p>
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
