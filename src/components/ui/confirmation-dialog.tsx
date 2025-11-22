@@ -66,7 +66,7 @@ export function ConfirmationDialog({
         <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
           <AlertDialogCancel
             disabled={loading}
-            className="mt-2 sm:mt-0"
+            className="mt-2 sm:mt-0 bg-[#F5F5F5] hover:bg-[#E5E5E5] text-foreground"
           >
             {cancelText}
           </AlertDialogCancel>

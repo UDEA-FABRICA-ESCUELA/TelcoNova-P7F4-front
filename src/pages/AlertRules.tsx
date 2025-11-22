@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Bell, Plus, Edit, Trash2, Mail, MessageSquare, Phone, BellRing } from "lucide-react";
+import { ArrowLeft, Bell, Plus, Edit, Trash2, Mail, MessageSquare, Phone, BellRing, AlertTriangle, Send, List } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -300,12 +300,12 @@ const AlertRules = () => {
 
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
+        <div className="min-h-screen bg-background p-8">
             <div className="max-w-7xl mx-auto">
                 <Button
-                    variant="outline"
+                    variant="secondary"
                     onClick={() => navigate("/")}
-                    className="mb-6 flex items-center gap-2"
+                    className="mb-6 flex items-center gap-2 bg-[#F5F5F5] hover:bg-[#E5E5E5] text-black"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Volver
@@ -314,11 +314,11 @@ const AlertRules = () => {
                 {/* Encabezado */}
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
-                        <div className="bg-green-500 p-3 rounded-lg">
+                        <div className="bg-[#468d9e] p-3 rounded-lg">
                             <Bell className="h-6 w-6 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-foreground">CONFIGURACIÓN DE ALERTAS AUTOMÁTICAS</h1>
+                            <h1 className="text-2xl font-bold text-primary">CONFIGURACIÓN DE ALERTAS AUTOMÁTICAS</h1>
                             <p className="text-muted-foreground">Crea, modifica y configura reglas disparadoras para alertas automáticas</p>
                         </div>
                     </div>
@@ -326,7 +326,7 @@ const AlertRules = () => {
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
                             <Button
-                                className="bg-black text-white hover:bg-black/90"
+                                className="bg-primary text-primary-foreground hover:bg-primary-hover"
                                 onClick={() => {
                                     setEditingRule(null);
                                     setFormData({
@@ -437,7 +437,7 @@ const AlertRules = () => {
 
 
                                 <div className="flex justify-end gap-2 pt-4">
-                                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                                    <Button variant="secondary" onClick={() => setIsDialogOpen(false)} className="bg-[#F5F5F5] hover:bg-[#E5E5E5] text-foreground">
                                         Cancelar
                                     </Button>
                                     <Button onClick={handleSaveRule}>
@@ -453,22 +453,37 @@ const AlertRules = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                     <Card>
                         <CardContent className="pt-6">
-                            <p className="text-sm font-medium text-muted-foreground mb-2">Total de reglas</p>
-                            <p className="text-3xl font-bold text-green-600">{totalRules}</p>
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="p-1 bg-[#F5F5F5] rounded">
+                                    <List className="h-4 w-4 text-[#171717]" />
+                                </div>
+                                <p className="text-sm font-medium text-muted-foreground">Total de reglas</p>
+                            </div>
+                            <p className="text-3xl font-bold text-[#171717]">{totalRules}</p>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardContent className="pt-6">
-                            <p className="text-sm font-medium text-muted-foreground mb-2">Reglas activas</p>
-                            <p className="text-3xl font-bold text-green-600">{activeRules}</p>
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="p-1 bg-[#468d9e]/20 rounded">
+                                    <Send className="h-4 w-4 text-[#468d9e]" />
+                                </div>
+                                <p className="text-sm font-medium text-muted-foreground">Reglas activas</p>
+                            </div>
+                            <p className="text-3xl font-bold text-[#468d9e]">{activeRules}</p>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardContent className="pt-6">
-                            <p className="text-sm font-medium text-muted-foreground mb-2">Reglas inactivas</p>
-                            <p className="text-3xl font-bold text-green-600">{inactiveRules}</p>
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="p-1 bg-red-100 rounded">
+                                    <AlertTriangle className="h-4 w-4 text-red-600" />
+                                </div>
+                                <p className="text-sm font-medium text-muted-foreground">Reglas inactivas</p>
+                            </div>
+                            <p className="text-3xl font-bold text-[#DC2626]">{inactiveRules}</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -483,22 +498,22 @@ const AlertRules = () => {
                     <TabsContent value="rules">
                         <Card>
                             <CardContent className="pt-6">
-                                <h3 className="text-lg font-bold mb-4">REGLAS CONFIGURADAS</h3>
+                                <h3 className="text-lg font-bold mb-4 text-primary">REGLAS CONFIGURADAS</h3>
                                 <p className="text-sm text-muted-foreground mb-4">
                                     Administra las reglas de notificación. Puedes crear, editar, eliminar o desactivar temporalmente cada regla.
                                 </p>
                                 <div className="rounded-lg overflow-hidden border">
                                     <Table>
-                                        <TableHeader className="bg-gray-900">
-                                            <TableRow className="hover:bg-gray-900">
-                                                <TableHead className="text-white font-bold">Nombre</TableHead>
-                                                <TableHead className="text-white font-bold">Evento Disparador</TableHead>
-                                                <TableHead className="text-white font-bold">Plantilla</TableHead>
-                                                <TableHead className="text-white font-bold">Público</TableHead>
-                                                <TableHead className="text-white font-bold">Canal</TableHead>
-                                                <TableHead className="text-white font-bold">Estado</TableHead>
-                                                <TableHead className="text-white font-bold">Última Modificación</TableHead>
-                                                <TableHead className="text-white font-bold">Acciones</TableHead>
+                                        <TableHeader className="bg-primary">
+                                            <TableRow className="hover:bg-primary">
+                                                <TableHead className="text-primary-foreground font-bold">Nombre</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">Evento Disparador</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">Plantilla</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">Público</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">Canal</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">Estado</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">Última Modificación</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">Acciones</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -556,17 +571,17 @@ const AlertRules = () => {
                     <TabsContent value="audit">
                         <Card>
                             <CardContent className="pt-6">
-                                <h3 className="text-lg font-bold mb-4">REGISTRO DE AUDITORÍA</h3>
+                                <h3 className="text-lg font-bold mb-4 text-primary">REGISTRO DE AUDITORÍA</h3>
                                 <div className="rounded-lg overflow-hidden border">
                                     <Table>
-                                        <TableHeader className="bg-gray-900">
-                                            <TableRow className="hover:bg-gray-900">
-                                                <TableHead className="text-white font-bold">ID AUDITORÍA</TableHead>
-                                                <TableHead className="text-white font-bold">USUARIO</TableHead>
-                                                <TableHead className="text-white font-bold">ACCIÓN</TableHead>
-                                                <TableHead className="text-white font-bold">FECHA</TableHead>
-                                                <TableHead className="text-white font-bold">HORA</TableHead>
-                                                <TableHead className="text-white font-bold">DESCRIPCIÓN</TableHead>
+                                        <TableHeader className="bg-primary">
+                                            <TableRow className="hover:bg-primary">
+                                                <TableHead className="text-primary-foreground font-bold">ID AUDITORÍA</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">USUARIO</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">ACCIÓN</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">FECHA</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">HORA</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">DESCRIPCIÓN</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>

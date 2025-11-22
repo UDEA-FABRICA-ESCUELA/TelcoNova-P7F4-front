@@ -121,6 +121,52 @@ class AuthService {
         console.log('[AUTH LOG]', event);
     }
 
+    private async mockLogin(credentials: LoginRequest): Promise<AuthResponse> {
+        // Simular delay de red
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Usuarios válidos en modo mock
+        const validUsers: Record<string, string> = {
+            'admin': 'admin123',
+            'supervisor': 'supervisor123',
+            'usuario1': 'contraseña123'
+        };
+
+        // Validar credenciales
+        if (validUsers[credentials.username] && validUsers[credentials.username] === credentials.password) {
+            // Login exitoso
+            const mockToken = `mock_jwt_token_${Date.now()}_${credentials.username}`;
+            this.resetFailedAttempts(credentials.username);
+            storeToken(mockToken);
+            localStorage.setItem('auth_username', credentials.username);
+            localStorage.setItem('last_activity', Date.now().toString());
+            this.logEvent('LOGIN_SUCCESS', credentials.username, 'Inicio de sesión exitoso (MODO MOCK)');
+
+            return {
+                jwtToken: mockToken,
+                welcomeMessage: `¡Bienvenido, ${credentials.username}! (Modo desarrollo)`,
+                expirationTime: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+            };
+        } else {
+            // Credenciales incorrectas
+            const attempts = this.recordFailedAttempt(credentials.username);
+            const remaining = MAX_ATTEMPTS - attempts;
+
+            if (remaining > 0) {
+                throw {
+                    message: `Credenciales incorrectas. Le quedan ${remaining} intento${remaining > 1 ? 's' : ''}.`,
+                    remainingAttempts: remaining
+                } as AuthError;
+            } else {
+                throw {
+                    message: 'Cuenta bloqueada por intentos fallidos.',
+                    isBlocked: true,
+                    remainingAttempts: 0
+                } as AuthError;
+            }
+        }
+    }
+
     async login(credentials: LoginRequest): Promise<AuthResponse> {
         if (this.isBlocked(credentials.username)) {
             const timeRemaining = Math.ceil(this.getBlockTimeRemaining(credentials.username) / 60000);
@@ -128,6 +174,11 @@ class AuthService {
                 message: `Cuenta bloqueada por intentos fallidos. Intente nuevamente en ${timeRemaining} minutos.`,
                 isBlocked: true
             } as AuthError;
+        }
+
+        // 🟢 MODO MOCK: Si está activado, usar autenticación mock
+        if (USE_MOCK_AUTH) {
+            return this.mockLogin(credentials);
         }
 
         try {

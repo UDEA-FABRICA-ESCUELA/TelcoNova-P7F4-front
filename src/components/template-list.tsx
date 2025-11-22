@@ -85,7 +85,7 @@ export function TemplateList({
       <div className="max-w-6xl mx-auto">
         {/* Header Principal */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-3xl font-bold text-primary mb-2">
             Sistema de Notificaciones
           </h1>
           <p className="text-muted-foreground">
@@ -97,18 +97,20 @@ export function TemplateList({
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-2xl font-semibold text-foreground mb-1">
+              <h2 className="text-2xl font-semibold text-primary mb-1">
                 Gestión de Plantillas de Mensajes
               </h2>
               <p className="text-muted-foreground">
-                Administra las plantillas de notificaciones personalizadas para tu sistema
+                Administra las plantillas de notificaciones personalizadas<br />
+                para tu sistema
               </p>
             </div>
             <div className="flex gap-3">
               <Button 
                 onClick={() => navigate("/notification-queue")} 
                 variant="outline"
-                className="flex items-center gap-2"
+                size="default"
+                className="flex items-center gap-2 bg-[#F5F5F5] hover:bg-[#E5E5E5] h-10 px-4 py-2"
               >
                 <ListOrdered className="h-4 w-4" />
                 Gestionar Cola de Notificaciones
@@ -116,12 +118,13 @@ export function TemplateList({
               <Button 
                 onClick={() => navigate("/alert-rules")} 
                 variant="outline"
-                className="flex items-center gap-2"
+                size="default"
+                className="flex items-center gap-2 bg-[#F5F5F5] hover:bg-[#E5E5E5] h-10 px-4 py-2"
               >
                 <Bell className="h-4 w-4" />
                 Configurar Alertas Automáticas
               </Button>
-              <Button onClick={onCreate} className="bg-foreground text-background hover:bg-foreground/90">
+              <Button onClick={onCreate} size="default" className="bg-primary text-primary-foreground hover:bg-primary-hover h-10 px-4 py-2">
                 Nueva Plantilla
               </Button>
             </div>
@@ -133,26 +136,26 @@ export function TemplateList({
 
         {/* Lista de Notificaciones */}
         <div>
-          <h3 className="text-lg font-semibold text-foreground mb-4">
+          <h3 className="text-lg font-semibold text-primary mb-4">
 
 Lista de Notificaciones</h3>
           
-          {templates.length === 0 ? <div className="bg-white rounded-lg border p-12 text-center">
+          {templates.length === 0 ? <div className="bg-card rounded-lg border p-12 text-center">
               <p className="text-muted-foreground">No hay plantillas creadas</p>
               <Button onClick={onCreate} className="mt-4">
                 Crear Primera Plantilla
               </Button>
-            </div> : <div className="bg-white rounded-lg border">
+            </div> : <div className="bg-card rounded-lg border">
               <Table>
-                <TableHeader>
-                  <TableRow className="border-b">
-                    <TableHead className="text-left font-semibold text-foreground py-4 px-6">
+                <TableHeader className="bg-primary">
+                  <TableRow className="border-b hover:bg-primary">
+                    <TableHead className="text-left font-semibold text-primary-foreground py-4 px-6">
                       Nombre de la plantilla
                     </TableHead>
-                    <TableHead className="text-left font-semibold text-foreground py-4 px-6 w-1/2">
+                    <TableHead className="text-left font-semibold text-primary-foreground py-4 px-6 w-1/2">
                       Contenido
                     </TableHead>
-                    <TableHead className="text-left font-semibold text-foreground py-4 px-6 w-24">
+                    <TableHead className="text-left font-semibold text-primary-foreground py-4 px-6 w-24">
                       Actions
                     </TableHead>
                   </TableRow>

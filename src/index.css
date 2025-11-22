@@ -5,11 +5,11 @@
 /* Clean Template Management System - White & Gray Design */
 @layer base {
   :root {
-    /* Base colors - Clean white backgrounds */
+    /* Base colors - White backgrounds */
     --background: 0 0% 100%;
     --foreground: 0 0% 9%;
 
-    /* Card system for template items - Pure white */
+    /* Card system for template items - White */
     --card: 0 0% 100%;
     --card-foreground: 0 0% 9%;
 
@@ -17,15 +17,15 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 9%;
 
-    /* Primary - Subtle blue for main actions */
-    --primary: 217 91% 59%;
+    /* Primary - #468d9e for main actions, headings, table headers */
+    --primary: 192 38% 45%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 54%;
+    --primary-hover: 192 38% 40%;
 
-    /* Secondary - Light gray for secondary actions */
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 9%;
-    --secondary-hover: 0 0% 91%;
+    /* Secondary - #468d9e for Cancel/Back buttons */
+    --secondary: 192 38% 45%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 192 38% 40%;
 
     /* Muted elements - Neutral grays */
     --muted: 0 0% 96%;
@@ -42,13 +42,13 @@
     /* Border and input styling - Light grays */
     --border: 0 0% 90%;
     --input: 0 0% 100%;
-    --ring: 217 91% 59%;
+    --ring: 192 38% 45%;
 
     /* Template editor specific tokens */
     --editor-bg: 0 0% 100%;
     --editor-border: 0 0% 90%;
     --variable-highlight: 0 0% 96%;
-    --variable-text: 217 91% 59%;
+    --variable-text: 192 38% 45%;
 
     /* Action button colors - Gray tones */
     --action-edit: 0 0% 64%;
@@ -59,39 +59,39 @@
     /* Status colors */
     --success: 142 76% 36%;
     --warning: 38 92% 50%;
-    --info: 217 91% 59%;
+    --info: 192 38% 45%;
 
     --radius: 0.5rem;
 
-    /* Sidebar colors - Clean grays */
-    --sidebar-background: 0 0% 98%;
+    /* Sidebar colors - White */
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 0 0% 20%;
-    --sidebar-primary: 0 0% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-primary: 192 38% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 95%;
     --sidebar-accent-foreground: 0 0% 10%;
     --sidebar-border: 0 0% 91%;
-    --sidebar-ring: 217 91% 59%;
+    --sidebar-ring: 192 38% 45%;
   }
 
   .dark {
-    /* Dark mode - Clean dark grays */
-    --background: 0 0% 9%;
-    --foreground: 0 0% 98%;
+    /* Dark mode - White backgrounds */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
 
-    --card: 0 0% 9%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
 
-    --popover: 0 0% 9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
 
-    --primary: 217 91% 59%;
+    --primary: 192 38% 45%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 64%;
+    --primary-hover: 192 38% 40%;
 
-    --secondary: 0 0% 14%;
-    --secondary-foreground: 0 0% 98%;
-    --secondary-hover: 0 0% 18%;
+    --secondary: 192 38% 45%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 192 38% 40%;
 
     --muted: 0 0% 14%;
     --muted-foreground: 0 0% 64%;
@@ -104,12 +104,12 @@
 
     --border: 0 0% 14%;
     --input: 0 0% 9%;
-    --ring: 217 91% 59%;
+    --ring: 192 38% 45%;
 
-    --editor-bg: 0 0% 9%;
+    --editor-bg: 0 0% 100%;
     --editor-border: 0 0% 14%;
     --variable-highlight: 0 0% 14%;
-    --variable-text: 217 91% 59%;
+    --variable-text: 192 38% 45%;
 
     --action-edit: 0 0% 64%;
     --action-edit-hover: 0 0% 45%;
@@ -117,14 +117,14 @@
     --action-delete-hover: 0 84% 55%;
     
     /* Sidebar dark colors */
-    --sidebar-background: 0 0% 10%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 217 91% 59%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 9%;
+    --sidebar-primary: 192 38% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 217 91% 59%;
+    --sidebar-ring: 192 38% 45%;
   }
 }
 
