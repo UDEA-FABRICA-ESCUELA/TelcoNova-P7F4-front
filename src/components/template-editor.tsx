@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { PREDEFINED_VARIABLES, validateTemplateContent } from "@/lib/api"
 import { cn } from "@/lib/utils"
-import { Save, AlertCircle } from "lucide-react"
+import { Save, AlertCircle, ArrowLeft, FileText } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface TemplateEditorProps {
@@ -111,13 +111,22 @@ export function TemplateEditor({
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-foreground mb-2">
-          Sistema de Gestión de Plantillas de Mensajes
-        </h1>
-        <p className="text-muted-foreground">
-          Crea y gestiona plantillas de mensajes con variables dinámicas para una comunicación consistente
-        </p>
+      <Button
+        variant="secondary"
+        onClick={onCancel}
+        className="mb-6 flex items-center gap-2 bg-[#F5F5F5] hover:bg-[#E5E5E5] text-black"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Volver
+      </Button>
+      <div className="flex items-center gap-3 mb-8">
+        <div className="bg-[#468d9e] p-3 rounded-lg">
+          <FileText className="h-6 w-6 text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-primary">SISTEMA DE GESTIÓN DE PLANTILLAS DE MENSAJES</h1>
+          <p className="text-muted-foreground">Crea y gestiona plantillas de mensajes con variables dinámicas para una comunicación consistente</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -178,9 +187,9 @@ export function TemplateEditor({
             <div className="pt-4 flex gap-3">
               <Button
                 onClick={onCancel}
-                variant="outline"
+                variant="secondary"
                 disabled={loading}
-                className="flex-1"
+                className="flex-1 bg-[#F5F5F5] hover:bg-[#E5E5E5] text-foreground"
               >
                 Cancelar
               </Button>

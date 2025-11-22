@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Bell, Send, Clock, AlertTriangle, TrendingUp } from "lucide-react";
+import { ArrowLeft, Bell, Send, Clock, AlertTriangle, Activity, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -147,12 +147,12 @@ const NotificationQueue = () => {
 
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
+        <div className="min-h-screen bg-background p-8">
             <div className="max-w-7xl mx-auto">
                 <Button
-                    variant="outline"
+                    variant="secondary"
                     onClick={() => navigate("/")}
-                    className="mb-6 flex items-center gap-2"
+                    className="mb-6 flex items-center gap-2 bg-[#F5F5F5] hover:bg-[#E5E5E5] text-black"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Volver
@@ -160,11 +160,11 @@ const NotificationQueue = () => {
 
                 {/* Encabezado */}
                 <div className="flex items-center gap-3 mb-8">
-                    <div className="bg-green-500 p-3 rounded-lg">
+                    <div className="bg-[#468d9e] p-3 rounded-lg">
                         <Bell className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">MONITOREO COLA DE NOTIFICACIONES</h1>
+                        <h1 className="text-2xl font-bold text-primary">MONITOREO COLA DE NOTIFICACIONES</h1>
                         <p className="text-muted-foreground">Monitoreo y gestión de cola de envíos</p>
                     </div>
                 </div>
@@ -172,13 +172,15 @@ const NotificationQueue = () => {
                 {/* Cards de métricas */}
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
                     {/* Estado del servicio */}
-                    <Card className="border-2 border-primary">
+                    <Card>
                         <CardContent className="pt-6">
                             <div className="flex items-center gap-2 mb-2">
-                                <TrendingUp className="h-4 w-4 text-primary" />
+                                <div className="p-1 bg-[#F5F5F5] rounded">
+                                    <Activity className="h-4 w-4 text-[#737373]" />
+                                </div>
                                 <p className="text-sm font-medium text-muted-foreground">Estado del servicio</p>
                             </div>
-                            <p className={`text-lg font-bold ${metrics.serviceStatus === "active" ? "text-green-600" : "text-red-600"}`}>
+                            <p className={`text-lg font-bold ${metrics.serviceStatus === "active" ? "text-[#468d9e]" : "text-red-600"}`}>
                                 {metrics.serviceStatus === "active" ? "Activo" : "Inactivo"}
                             </p>
                         </CardContent>
@@ -188,12 +190,12 @@ const NotificationQueue = () => {
                     <Card>
                         <CardContent className="pt-6">
                             <div className="flex items-center gap-2 mb-2">
-                                <div className="p-1 bg-green-100 rounded">
-                                    <Send className="h-4 w-4 text-green-600" />
+                                <div className="p-1 bg-[#468d9e]/20 rounded">
+                                    <Send className="h-4 w-4 text-[#468d9e]" />
                                 </div>
                                 <p className="text-sm font-medium text-muted-foreground">Enviados</p>
                             </div>
-                            <p className="text-3xl font-bold text-foreground">{metrics.sent ?? 0}</p>
+                            <p className="text-3xl font-bold text-[#468D9E]">{metrics.sent ?? 0}</p>
                         </CardContent>
                     </Card>
 
@@ -252,18 +254,18 @@ const NotificationQueue = () => {
                     <TabsContent value="queue">
                         <Card>
                             <CardContent className="pt-6">
-                                <h3 className="text-lg font-bold mb-4">MENSAJES PENDIENTES Y EN PROCESO ({queueMessages.length})</h3>
+                                <h3 className="text-lg font-bold mb-4 text-primary">MENSAJES PENDIENTES Y EN PROCESO ({queueMessages.length})</h3>
                                 <div className="rounded-lg overflow-hidden border">
                                     <Table>
-                                        <TableHeader className="bg-gray-900">
-                                            <TableRow className="hover:bg-gray-900">
-                                                <TableHead className="text-white font-bold">ID</TableHead>
-                                                <TableHead className="text-white font-bold">Asunto</TableHead>
-                                                <TableHead className="text-white font-bold">Destinatario</TableHead>
-                                                <TableHead className="text-white font-bold">Canal</TableHead>
-                                                <TableHead className="text-white font-bold">Estado</TableHead>
-                                                <TableHead className="text-white font-bold">Prioridad</TableHead>
-                                                <TableHead className="text-white font-bold">Creado</TableHead>
+                                        <TableHeader className="bg-primary">
+                                            <TableRow className="hover:bg-primary">
+                                                <TableHead className="text-primary-foreground font-bold">ID</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">Asunto</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">Destinatario</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">Canal</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">Estado</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">Prioridad</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">Creado</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -297,16 +299,16 @@ const NotificationQueue = () => {
                     <TabsContent value="logs">
                         <Card>
                             <CardContent className="pt-6">
-                                <h3 className="text-lg font-bold mb-4">LOGS DE ERRORES Y REINTENTOS</h3>
+                                <h3 className="text-lg font-bold mb-4 text-primary">LOGS DE ERRORES Y REINTENTOS</h3>
                                 <div className="rounded-lg overflow-hidden border">
                                     <Table>
-                                        <TableHeader className="bg-gray-900">
-                                            <TableRow className="hover:bg-gray-900">
-                                                <TableHead className="text-white font-bold">ID LOG</TableHead>
-                                                <TableHead className="text-white font-bold">CANAL</TableHead>
-                                                <TableHead className="text-white font-bold">ERROR</TableHead>
-                                                <TableHead className="text-white font-bold">FECHA/HORA</TableHead>
-                                                <TableHead className="text-white font-bold">INTENTOS</TableHead>
+                                        <TableHeader className="bg-primary">
+                                            <TableRow className="hover:bg-primary">
+                                                <TableHead className="text-primary-foreground font-bold">ID LOG</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">CANAL</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">ERROR</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">FECHA/HORA</TableHead>
+                                                <TableHead className="text-primary-foreground font-bold">INTENTOS</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -345,7 +347,7 @@ const NotificationQueue = () => {
                     <TabsContent value="stats">
                         <Card>
                             <CardContent className="pt-6">
-                                <h3 className="text-lg font-bold mb-4">RESUMEN DETALLADO DE MÉTRICAS</h3>
+                                <h3 className="text-lg font-bold mb-4 text-primary">RESUMEN DETALLADO DE MÉTRICAS</h3>
                                 <div className="rounded-lg overflow-hidden border">
                                     <Table>
                                         <TableBody>
@@ -353,9 +355,9 @@ const NotificationQueue = () => {
                                                 <TableCell className="font-bold w-[30%]">Estado del Servicio</TableCell>
                                                 <TableCell>{metrics.serviceStatus === "active" ? "Operativo" : "Fuera de línea"}</TableCell>
                                             </TableRow>
-                                            <TableRow className="bg-green-50/50">
+                                            <TableRow className="bg-[#468d9e]/10">
                                                 <TableCell className="font-bold">Total Enviados</TableCell>
-                                                <TableCell className="text-green-600">{metrics.sent ?? 0}</TableCell>
+                                                <TableCell className="text-[#468d9e]">{metrics.sent ?? 0}</TableCell>
                                             </TableRow>
                                             <TableRow className="bg-yellow-50/50">
                                                 <TableCell className="font-bold">Total Pendientes (en cola)</TableCell>

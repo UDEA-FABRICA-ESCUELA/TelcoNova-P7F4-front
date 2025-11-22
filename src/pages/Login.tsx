@@ -35,17 +35,15 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-background">
       {/* Lado izquierdo - Formulario */}
       <div className="flex-1 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md space-y-8">
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold tracking-tight">
+            <h1 className="text-4xl font-bold tracking-tight text-primary">
               BIENVENIDO DE VUELTA
             </h1>
-            <p className="text-muted-foreground">
-              por favor ingrese sus datos
-            </p>
+            <p className="text-muted-foreground">por favor ingrese sus datos</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -59,6 +57,7 @@ const Login = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 disabled={isLoading}
+                className="!bg-white hover:!bg-white focus:!bg-white focus-visible:!bg-white border-[#468d9e]"
               />
             </div>
 
@@ -72,6 +71,7 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={isLoading}
+                className="!bg-white hover:!bg-white focus:!bg-white focus-visible:!bg-white border-[#468d9e]"
               />
             </div>
 
@@ -86,42 +86,40 @@ const Login = () => {
                 htmlFor="remember"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                Remember me
+                Recordarme
               </label>
             </div>
 
             <Button
               type="submit"
-              className="w-full bg-[#4EECC7] hover:bg-[#3dd4b0] text-gray-900 font-medium"
+              className="w-full bg-primary hover:bg-primary-hover text-primary-foreground font-medium"
               disabled={isLoading}
               size="lg"
             >
-              {isLoading ? 'Ingresando...' : 'Sign in'}
+              {isLoading ? "Ingresando..." : "Iniciar sesión"}
             </Button>
           </form>
-
-          
         </div>
       </div>
 
       {/* Lado derecho - Diseño con candado */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-[#4EECC7] to-[#3dd4b0] items-center justify-center p-8">
+      <div className="hidden lg:flex flex-1 bg-primary items-center justify-center p-8">
         <div className="relative">
           {/* Candado principal */}
           <div className="relative z-10">
-            <Lock 
-              className="w-64 h-64 text-gray-900 stroke-[1.5]" 
+            <Lock
+              className="w-64 h-64 text-primary-foreground stroke-[1.5]"
               strokeWidth={1.5}
             />
             {/* Escudo con check dentro del candado */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <Shield 
-                className="w-32 h-32 text-gray-900 fill-white/20" 
+              <Shield
+                className="w-32 h-32 text-primary-foreground fill-white/20"
                 strokeWidth={2}
               />
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                 <svg
-                  className="w-16 h-16 text-gray-900"
+                  className="w-16 h-16 text-primary-foreground"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
