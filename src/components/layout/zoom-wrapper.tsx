@@ -1,4 +1,5 @@
 import { useState, useEffect, ReactNode, useRef } from "react";
+import { createPortal } from "react-dom";
 import { ZoomButton } from "@/components/ui/zoom-button";
 
 interface ZoomWrapperProps {
@@ -78,7 +79,10 @@ export function ZoomWrapper({ children }: ZoomWrapperProps) {
 
   return (
     <>
-      <ZoomButton isActive={isZoomMode} onClick={toggleZoomMode} />
+      {createPortal(
+        <ZoomButton isActive={isZoomMode} onClick={toggleZoomMode} />,
+        document.body
+      )}
       <div className={isZoomMode ? "cursor-zoom-in" : ""}>
         {children}
       </div>
