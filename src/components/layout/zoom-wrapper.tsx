@@ -29,9 +29,8 @@ export function ZoomWrapper({ children }: ZoomWrapperProps) {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       
-      // Allow zoom button to work normally - completely ignore these events
+      // Allow zoom button to work normally - don't interfere with it
       if (target.closest('[data-zoom-button="true"]')) {
-        e.stopImmediatePropagation();
         return;
       }
       
