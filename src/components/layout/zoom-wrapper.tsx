@@ -55,7 +55,7 @@ export function ZoomWrapper({ children }: ZoomWrapperProps) {
   return (
     <>
       <ZoomButton isActive={isZoomMode} onClick={toggleZoomMode} />
-      <div className={isZoomMode ? "cursor-pointer" : ""}>
+      <div className={isZoomMode ? "cursor-zoom-in" : ""}>
         {children}
       </div>
     </>
