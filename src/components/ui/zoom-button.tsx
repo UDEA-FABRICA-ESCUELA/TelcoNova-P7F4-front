@@ -8,8 +8,13 @@ interface ZoomButtonProps {
 
 export function ZoomButton({ isActive, onClick }: ZoomButtonProps) {
   const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     onClick();
+  };
+  
+  const handlePointerDown = (e: React.PointerEvent) => {
+    e.stopPropagation();
   };
 
   return (
@@ -17,6 +22,7 @@ export function ZoomButton({ isActive, onClick }: ZoomButtonProps) {
       variant={isActive ? "default" : "secondary"}
       size="icon"
       onClick={handleClick}
+      onPointerDown={handlePointerDown}
       className="fixed top-4 right-4 z-[9999] shadow-lg"
       data-zoom-button="true"
       aria-label={isActive ? "Desactivar modo zoom" : "Activar modo zoom"}
