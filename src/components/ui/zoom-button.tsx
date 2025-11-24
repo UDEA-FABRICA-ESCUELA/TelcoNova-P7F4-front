@@ -17,7 +17,7 @@ export function ZoomButton({ isActive, onClick }: ZoomButtonProps) {
       variant={isActive ? "default" : "secondary"}
       size="icon"
       onClick={handleClick}
-      className="fixed top-4 right-4 z-50 shadow-lg"
+      className="fixed top-4 right-4 z-[9999] shadow-lg"
       data-zoom-button="true"
       aria-label={isActive ? "Desactivar modo zoom" : "Activar modo zoom"}
     >
