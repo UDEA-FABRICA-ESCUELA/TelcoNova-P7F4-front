@@ -29,8 +29,13 @@ export function ZoomWrapper({ children }: ZoomWrapperProps) {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       
-      // Allow zoom button to work normally - don't interfere with it
+      // Allow zoom button to work normally - don't interfere with it at all
       if (target.closest('[data-zoom-button="true"]')) {
+        return;
+      }
+      
+      // Don't interfere with dialog/modal overlays or content
+      if (target.closest('[role="dialog"]') || target.closest('[data-radix-portal]')) {
         return;
       }
       
