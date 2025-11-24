@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode, useRef } from "react";
 import { ZoomButton } from "@/components/ui/zoom-button";
 
 interface ZoomWrapperProps {
@@ -7,9 +7,18 @@ interface ZoomWrapperProps {
 
 export function ZoomWrapper({ children }: ZoomWrapperProps) {
   const [isZoomMode, setIsZoomMode] = useState(false);
+  const zoomedElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (!isZoomMode) return;
+    if (!isZoomMode) {
+      // Reset any zoomed element when zoom mode is disabled
+      if (zoomedElementRef.current) {
+        zoomedElementRef.current.style.fontSize = "";
+        zoomedElementRef.current.style.fontWeight = "";
+        zoomedElementRef.current = null;
+      }
+      return;
+    }
 
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -23,20 +32,29 @@ export function ZoomWrapper({ children }: ZoomWrapperProps) {
       e.preventDefault();
       e.stopPropagation();
       
+      // If clicking the same element, toggle zoom off
+      if (zoomedElementRef.current === target) {
+        target.style.fontSize = "";
+        target.style.fontWeight = "";
+        zoomedElementRef.current = null;
+        return;
+      }
+      
+      // Reset previous zoomed element
+      if (zoomedElementRef.current) {
+        zoomedElementRef.current.style.fontSize = "";
+        zoomedElementRef.current.style.fontWeight = "";
+      }
+      
       // Get all text from the clicked element and its children
       const textContent = target.textContent || "";
       
       if (textContent.trim()) {
-        // Apply zoom effect
+        // Apply zoom effect permanently
         target.style.fontSize = "2rem";
         target.style.fontWeight = "bold";
         target.style.transition = "all 0.3s ease";
-        
-        // Reset after 3 seconds
-        setTimeout(() => {
-          target.style.fontSize = "";
-          target.style.fontWeight = "";
-        }, 3000);
+        zoomedElementRef.current = target;
       }
     };
 
