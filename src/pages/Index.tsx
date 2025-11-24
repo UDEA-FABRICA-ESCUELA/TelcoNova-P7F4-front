@@ -1,6 +1,7 @@
 import * as React from "react"
 import { TemplateList } from "@/components/template-list"
 import { TemplateEditor } from "@/components/template-editor"
+import { ZoomWrapper } from "@/components/layout/zoom-wrapper"
 import { useToast } from "@/hooks/use-toast"
 import {
   Template,
@@ -130,6 +131,56 @@ const Index = () => {
   // Render different views based on current state
   if (currentView === "list") {
     return (
+      <ZoomWrapper>
+        <div className="min-h-screen bg-background">
+          <TemplateList
+            templates={templates}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onCreate={handleCreateNew}
+            loading={loading}
+            deleteLoading={deleteLoading}
+          />
+        </div>
+      </ZoomWrapper>
+    )
+  }
+
+  if (currentView === "create") {
+    return (
+      <ZoomWrapper>
+        <div className="min-h-screen bg-background">
+          <TemplateEditor
+            onSave={handleSave}
+            onCancel={handleBackToList}
+            loading={saving}
+            mode="create"
+          />
+        </div>
+      </ZoomWrapper>
+    )
+  }
+
+  if (currentView === "edit" && editingTemplate) {
+    return (
+      <ZoomWrapper>
+        <div className="min-h-screen bg-background">
+          <TemplateEditor
+            initialName={editingTemplate.name}
+            initialContent={editingTemplate.content}
+            onSave={handleSave}
+            onCancel={handleBackToList}
+            loading={saving}
+            mode="edit"
+          />
+        </div>
+      </ZoomWrapper>
+    )
+  }
+
+  // Fallback
+  return (
+    <ZoomWrapper>
       <div className="min-h-screen bg-background">
         <TemplateList
           templates={templates}
@@ -140,49 +191,7 @@ const Index = () => {
           deleteLoading={deleteLoading}
         />
       </div>
-    )
-  }
-
-  if (currentView === "create") {
-    return (
-      <div className="min-h-screen bg-background">
-        <TemplateEditor
-          onSave={handleSave}
-          onCancel={handleBackToList}
-          loading={saving}
-          mode="create"
-        />
-      </div>
-    )
-  }
-
-  if (currentView === "edit" && editingTemplate) {
-    return (
-      <div className="min-h-screen bg-background">
-        <TemplateEditor
-          initialName={editingTemplate.name}
-          initialContent={editingTemplate.content}
-          onSave={handleSave}
-          onCancel={handleBackToList}
-          loading={saving}
-          mode="edit"
-        />
-      </div>
-    )
-  }
-
-  // Fallback
-  return (
-    <div className="min-h-screen bg-background">
-      <TemplateList
-        templates={templates}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onCreate={handleCreateNew}
-        loading={loading}
-        deleteLoading={deleteLoading}
-      />
-    </div>
+    </ZoomWrapper>
   )
 };
 
