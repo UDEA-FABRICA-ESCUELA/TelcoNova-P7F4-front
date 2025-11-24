@@ -17,8 +17,13 @@ export function ZoomWrapper({ children }: ZoomWrapperProps) {
         zoomedElementRef.current.style.fontWeight = "";
         zoomedElementRef.current = null;
       }
+      // Remove cursor override
+      document.body.classList.remove('zoom-mode-active');
       return;
     }
+
+    // Add cursor override class to body
+    document.body.classList.add('zoom-mode-active');
 
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -63,6 +68,7 @@ export function ZoomWrapper({ children }: ZoomWrapperProps) {
 
     return () => {
       document.removeEventListener("click", handleClick, true);
+      document.body.classList.remove('zoom-mode-active');
     };
   }, [isZoomMode]);
 

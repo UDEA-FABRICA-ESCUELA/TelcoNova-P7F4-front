@@ -137,3 +137,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Force zoom cursor when zoom mode is active */
+body.zoom-mode-active,
+body.zoom-mode-active *,
+body.zoom-mode-active button,
+body.zoom-mode-active a,
+body.zoom-mode-active [role="button"] {
+  cursor: zoom-in !important;
+}
