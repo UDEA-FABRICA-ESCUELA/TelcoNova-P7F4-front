@@ -60,70 +60,71 @@ const NotificationQueue = () => {
     const [errorLogs, setErrorLogs] = useState<NotificationDTO[]>([]);
     const [queueMessages, setQueueMessages] = useState<NotificationDTO[]>([]);
 
-    // Cargar datos del backend al montar el componente
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // 1. OBTENER ESTADÍSTICAS
-                const statsData = await getNotificationStats();
+    // Función para cargar datos del backend
+    const fetchData = async () => {
+        try {
+            // 1. OBTENER ESTADÍSTICAS
+            const statsData = await getNotificationStats();
 
-                if (statsData) {
-                    // 🟢 CORRECCIÓN CLAVE: Mapear los nombres del DTO del Backend (español)
-                    // a los nombres de estado del Frontend (inglés/camelCase).
-                    const backendData = statsData as unknown as {
-                        totalEnviado: number,
-                        totalPendiente: number,
-                        totalFallido: number,
-                        totalProcesando: number,
-                        tazaExito: number
-                    };
+            if (statsData) {
+                // 🟢 CORRECCIÓN CLAVE: Mapear los nombres del DTO del Backend (español)
+                // a los nombres de estado del Frontend (inglés/camelCase).
+                const backendData = statsData as unknown as {
+                    totalEnviado: number,
+                    totalPendiente: number,
+                    totalFallido: number,
+                    totalProcesando: number,
+                    tazaExito: number
+                };
 
-                    setMetrics({
-                        serviceStatus: "active",
-                        sent: backendData.totalEnviado,
-                        pending: backendData.totalPendiente,
-                        failed: backendData.totalFallido,
-                        processing: backendData.totalProcesando,
-                        successRate: backendData.tazaExito,
-                    });
-
-                } else {
-                    console.warn("Advertencia: getNotificationStats devolvió datos nulos o vacíos.");
-                    setMetrics(prev => ({ ...prev, serviceStatus: "inactive" }));
-                }
-
-                // 2. OBTENER LOGS DE ERRORES (Endpoint /notifications/errors)
-                const errorsResponse = await authFetch(`${API_BASE_URL}/notifications/errors`);
-                if (errorsResponse.ok) {
-                    const errorsData: NotificationDTO[] = await errorsResponse.json();
-                    setErrorLogs(errorsData);
-                } else {
-                    console.warn(`Advertencia: No se pudieron cargar los logs de errores. Status: ${errorsResponse.status}`);
-                    setErrorLogs([]);
-                }
-
-                // 3. OBTENER COLA DE MENSAJES (Nuevo Endpoint /notifications/queue)
-                const queueResponse = await authFetch(`${API_BASE_URL}/notifications/queue`);
-                if (queueResponse.ok) {
-                    const queueData: NotificationDTO[] = await queueResponse.json();
-                    setQueueMessages(queueData);
-                } else {
-                    console.warn(`Advertencia: No se pudo cargar la cola de mensajes. Status: ${queueResponse.status}`);
-                    setQueueMessages([]);
-                }
-
-
-            } catch (error) {
-                console.error("Error al cargar datos del backend:", error);
-                toast({
-                    title: "Error de Conexión/API",
-                    description: "No se pudo autenticar o conectar para cargar las métricas de la cola.",
-                    variant: "destructive"
+                setMetrics({
+                    serviceStatus: "active",
+                    sent: backendData.totalEnviado,
+                    pending: backendData.totalPendiente,
+                    failed: backendData.totalFallido,
+                    processing: backendData.totalProcesando,
+                    successRate: backendData.tazaExito,
                 });
+
+            } else {
+                console.warn("Advertencia: getNotificationStats devolvió datos nulos o vacíos.");
                 setMetrics(prev => ({ ...prev, serviceStatus: "inactive" }));
             }
-        };
 
+            // 2. OBTENER LOGS DE ERRORES (Endpoint /notifications/errors)
+            const errorsResponse = await authFetch(`${API_BASE_URL}/notifications/errors`);
+            if (errorsResponse.ok) {
+                const errorsData: NotificationDTO[] = await errorsResponse.json();
+                setErrorLogs(errorsData);
+            } else {
+                console.warn(`Advertencia: No se pudieron cargar los logs de errores. Status: ${errorsResponse.status}`);
+                setErrorLogs([]);
+            }
+
+            // 3. OBTENER COLA DE MENSAJES (Nuevo Endpoint /notifications/queue)
+            const queueResponse = await authFetch(`${API_BASE_URL}/notifications/queue`);
+            if (queueResponse.ok) {
+                const queueData: NotificationDTO[] = await queueResponse.json();
+                setQueueMessages(queueData);
+            } else {
+                console.warn(`Advertencia: No se pudo cargar la cola de mensajes. Status: ${queueResponse.status}`);
+                setQueueMessages([]);
+            }
+
+
+        } catch (error) {
+            console.error("Error al cargar datos del backend:", error);
+            toast({
+                title: "Error de Conexión/API",
+                description: "No se pudo autenticar o conectar para cargar las métricas de la cola.",
+                variant: "destructive"
+            });
+            setMetrics(prev => ({ ...prev, serviceStatus: "inactive" }));
+        }
+    };
+
+    // Cargar datos del backend al montar el componente
+    useEffect(() => {
         fetchData();
 
         // Actualización automática cada 30 segundos
@@ -170,10 +171,7 @@ const NotificationQueue = () => {
                             <p className="text-muted-foreground">Monitoreo y gestión de cola de envíos</p>
                         </div>
                     </div>
-                    <CreateNotificationDialog onSuccess={() => {
-                        // Recargar datos después de crear una notificación
-                        window.location.reload();
-                    }} />
+                    <CreateNotificationDialog onSuccess={fetchData} />
                 </div>
 
                 {/* Cards de métricas */}
