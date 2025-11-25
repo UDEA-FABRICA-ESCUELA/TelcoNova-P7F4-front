@@ -8,6 +8,7 @@ import { ArrowLeft, Bell, Send, Clock, AlertTriangle, Activity, TrendingUp } fro
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { CreateNotificationDialog } from "@/components/create-notification-dialog";
 
 // 🟢 IMPORTACIONES
 // NOTA: Asumo que NotificationStatsDto en lib/api.ts coincide con el DTO del Backend (totalEnviado, tazaExito)
@@ -159,14 +160,20 @@ const NotificationQueue = () => {
                 </Button>
 
                 {/* Encabezado */}
-                <div className="flex items-center gap-3 mb-8">
-                    <div className="bg-[#468d9e] p-3 rounded-lg">
-                        <Bell className="h-6 w-6 text-white" />
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-[#468d9e] p-3 rounded-lg">
+                            <Bell className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold text-primary">MONITOREO COLA DE NOTIFICACIONES</h1>
+                            <p className="text-muted-foreground">Monitoreo y gestión de cola de envíos</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-primary">MONITOREO COLA DE NOTIFICACIONES</h1>
-                        <p className="text-muted-foreground">Monitoreo y gestión de cola de envíos</p>
-                    </div>
+                    <CreateNotificationDialog onSuccess={() => {
+                        // Recargar datos después de crear una notificación
+                        window.location.reload();
+                    }} />
                 </div>
 
                 {/* Cards de métricas */}
