@@ -289,7 +289,7 @@ const NotificationQueue = () => {
                                                         </TableCell>
                                                         <TableCell>{getStatusBadge(msg.status)}</TableCell>
                                                         <TableCell>{msg.priority}</TableCell>
-                                                        <TableCell>{new Date(msg.createdAt).toLocaleString()}</TableCell>
+                                                        <TableCell>{new Date(msg.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota' })}</TableCell>
                                                     </TableRow>
                                                 ))
                                             )}
@@ -324,7 +324,7 @@ const NotificationQueue = () => {
                                             ) : (
                                                 errorLogs.map((log) => {
                                                     const dateTime = log.createdAt ? new Date(log.createdAt) : null;
-                                                    const dateStr = dateTime ? dateTime.toLocaleString() : 'N/A';
+                                                    const dateStr = dateTime ? dateTime.toLocaleString('es-CO', { timeZone: 'America/Bogota' }) : 'N/A';
 
                                                     return (
                                                         <TableRow key={log.id}>
